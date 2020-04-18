@@ -74,6 +74,18 @@ const int home_btn_w = 180;
 const int home_btn_x = 60;
 const int home_btn_y = vwp_h - home_btn_h - 40;
 
+// dp
+// dynamic follow btn
+const int df_btn_h = 180;
+const int df_btn_w = 180;
+const int df_btn_x = 1650;
+const int df_btn_y = 750;
+// accel profile btn
+const int ap_btn_h = 180;
+const int ap_btn_w = 180;
+const int ap_btn_x = 1450;
+const int ap_btn_y = 750;
+
 const int UI_FREQ = 30;   // Hz
 
 const int MODEL_PATH_MAX_VERTICES_CNT = 98;
@@ -160,6 +172,23 @@ typedef struct UIScene {
   cereal::HealthData::HwType hwType;
   int satelliteCount;
   uint8_t athenaStatus;
+
+  // dp
+  // for minimal UI
+  float angleSteersDes;
+  float angleSteers;
+  char ipAddr[20];
+  int alert_rate;
+  int alert_type;
+  // for black screen on reversing
+  int gearShifter;
+
+  // for blinker, from kegman
+  bool leftBlinker;
+  bool rightBlinker;
+  bool brakeLights;
+  int blinker_blinkingrate;
+
 } UIScene;
 
 typedef struct {
@@ -296,6 +325,38 @@ typedef struct UIState {
   model_path_vertices_data model_path_vertices[MODEL_LANE_PATH_CNT * 2];
 
   track_vertices_data track_vertices[2];
+
+  // dp
+  SubSocket *carstate_sock;
+  int dragon_updating_timeout;
+  int dragon_last_modified_timeout;
+  int dragon_dashcam_impact_detect_started_timeout;
+
+  bool dragon_ui_speed;
+  bool dragon_ui_event;
+  bool dragon_ui_maxspeed;
+  bool dragon_ui_face;
+  bool dragon_ui_dev;
+  bool dragon_ui_dev_mini;
+  bool dragon_enable_dashcam;
+  float dragon_ui_volume_boost;
+  bool dragon_driving_ui;
+  bool dragon_ui_lane;
+  bool dragon_ui_lead;
+  bool dragon_ui_path;
+  bool dragon_ui_blinker;
+  bool dragon_waze_mode;
+  bool dragon_ui_dm_view;
+  bool dragon_updating;
+  uint64_t dragon_df_mode;
+  uint64_t dragon_ap_mode;
+  bool dragon_enable_dm;
+  char dragon_locale[20];
+  bool dragon_ui_screen_off_reversing;
+  char dragon_last_modified[20];
+  bool dragon_ui_screen_off_driving;
+  uint64_t dragon_ui_brightness;
+  bool dragon_dashcam_impact_detect_started;
 } UIState;
 
 // API

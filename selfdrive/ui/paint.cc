@@ -254,6 +254,30 @@ static void draw_steering(UIState *s, float curvature) {
   // ui_draw_lane_edge(s, points, 0.0, nvgRGBA(0, 0, 255, 128), 5);
 }
 
+static void draw_front_frame(UIState *s) {
+  const UIScene *scene = &s->scene;
+
+  float x1, x2, y1, y2;
+  glBindVertexArray(s->frame_vao[1]);
+
+  mat4 *out_mat;
+  out_mat = &s->front_frame_mat;
+  glActiveTexture(GL_TEXTURE0);
+  if (s->cur_vision_front_idx >= 0) {
+    glBindTexture(GL_TEXTURE_2D, s->frame_front_texs[s->cur_vision_front_idx]);
+  }
+
+  glUseProgram(s->frame_program);
+  glUniform1i(s->frame_texture_loc, 0);
+  glUniformMatrix4fv(s->frame_transform_loc, 1, GL_TRUE, out_mat->v);
+
+  assert(glGetError() == GL_NO_ERROR);
+  glEnableVertexAttribArray(0);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, (const void*)0);
+  glDisableVertexAttribArray(0);
+  glBindVertexArray(0);
+}
+
 static void draw_frame(UIState *s) {
   const UIScene *scene = &s->scene;
 
@@ -344,27 +368,31 @@ static void ui_draw_vision_lanes(UIState *s) {
     update_all_lane_lines_data(s, scene->model.right_lane, pvd + MODEL_LANE_PATH_CNT);
     s->model_changed = false;
   }
-  // Draw left lane edge
-  ui_draw_lane(
-      s, &scene->model.left_lane,
-      pvd,
-      nvgRGBAf(1.0, 1.0, 1.0, scene->model.left_lane.prob));
+  if (s->dragon_ui_lane) {
+    // Draw left lane edge
+    ui_draw_lane(
+        s, &scene->model.left_lane,
+        pvd,
+        nvgRGBAf(1.0, 1.0, 1.0, scene->model.left_lane.prob));
 
-  // Draw right lane edge
-  ui_draw_lane(
-      s, &scene->model.right_lane,
-      pvd + MODEL_LANE_PATH_CNT,
-      nvgRGBAf(1.0, 1.0, 1.0, scene->model.right_lane.prob));
+    // Draw right lane edge
+    ui_draw_lane(
+        s, &scene->model.right_lane,
+        pvd + MODEL_LANE_PATH_CNT,
+        nvgRGBAf(1.0, 1.0, 1.0, scene->model.right_lane.prob));
+  }
 
   if(s->livempc_or_radarstate_changed) {
     update_all_track_data(s);
     s->livempc_or_radarstate_changed = false;
   }
-  // Draw vision path
-  ui_draw_track(s, false, &s->track_vertices[0]);
-  if (scene->engaged) {
-    // Draw MPC path when engaged
-    ui_draw_track(s, true, &s->track_vertices[1]);
+  if (s->dragon_ui_path) {
+    // Draw vision path
+    ui_draw_track(s, false, &s->track_vertices[0]);
+    if (scene->engaged) {
+      // Draw MPC path when engaged
+      ui_draw_track(s, true, &s->track_vertices[1]);
+    }
   }
 }
 
@@ -393,11 +421,13 @@ static void ui_draw_world(UIState *s) {
   // Draw lane edges and vision/mpc tracks
   ui_draw_vision_lanes(s);
 
-  if (scene->lead_status) {
-    draw_lead(s, scene->lead_d_rel, scene->lead_v_rel, scene->lead_y_rel);
-  }
-  if ((scene->lead_status2) && (fabs(scene->lead_d_rel - scene->lead_d_rel2) > 3.0)) {
-    draw_lead(s, scene->lead_d_rel2, scene->lead_v_rel2, scene->lead_y_rel2);
+  if (s->dragon_ui_lead) {
+    if (scene->lead_status) {
+      draw_lead(s, scene->lead_d_rel, scene->lead_v_rel, scene->lead_y_rel);
+    }
+    if ((scene->lead_status2) && (fabs(scene->lead_d_rel - scene->lead_d_rel2) > 3.0)) {
+      draw_lead(s, scene->lead_d_rel2, scene->lead_v_rel2, scene->lead_y_rel2);
+    }
   }
   nvgRestore(s->vg);
 }
@@ -452,13 +482,13 @@ static void ui_draw_vision_maxspeed(UIState *s) {
 
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   const int text_x = viz_maxspeed_x + (viz_maxspeed_xo / 2) + (viz_maxspeed_w / 2);
-  ui_draw_text(s->vg, text_x, 148, "MAX", 26 * 2.5, COLOR_WHITE_ALPHA(is_cruise_set ? 200 : 100), s->font_sans_regular);
+  ui_draw_text(s->vg, text_x, 148, (strcmp(s->dragon_locale, "zh-TW") == 0? "最高速限" : strcmp(s->dragon_locale, "zh-CN") == 0? "最高速限" : "MAX"), 26 * 2.5, COLOR_WHITE_ALPHA(is_cruise_set ? 200 : 100), s->font_sans_regular);
 
   if (is_cruise_set) {
     snprintf(maxspeed_str, sizeof(maxspeed_str), "%d", maxspeed_calc);
     ui_draw_text(s->vg, text_x, 242, maxspeed_str, 48 * 2.5, COLOR_WHITE, s->font_sans_bold);
   } else {
-    ui_draw_text(s->vg, text_x, 242, "N/A", 42 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
+    ui_draw_text(s->vg, text_x, 242, (strcmp(s->dragon_locale, "zh-TW") == 0? "未設" : strcmp(s->dragon_locale, "zh-CN") == 0? "未设" : "N/A"), 42 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
   }
 }
 
@@ -506,8 +536,8 @@ static void ui_draw_vision_speedlimit(UIState *s) {
   // Draw "Speed Limit" Text
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   color = is_speedlim_valid && s->is_ego_over_limit ? COLOR_WHITE : COLOR_BLACK;
-  ui_draw_text(s->vg, text_x + (is_speedlim_valid ? 6 : 0), text_y, "SMART", 50, color, s->font_sans_semibold);
-  ui_draw_text(s->vg, text_x + (is_speedlim_valid ? 6 : 0), text_y + 40, "SPEED", 50, color, s->font_sans_semibold);
+  ui_draw_text(s->vg, text_x + (is_speedlim_valid ? 6 : 0), text_y, (strcmp(s->dragon_locale, "zh-TW") == 0? "智能" : strcmp(s->dragon_locale, "zh-CN") == 0? "智能" : "SMART"), 50, color, s->font_sans_semibold);
+  ui_draw_text(s->vg, text_x + (is_speedlim_valid ? 6 : 0), text_y + 40, (strcmp(s->dragon_locale, "zh-TW") == 0? "速度" : strcmp(s->dragon_locale, "zh-CN") == 0? "速度" : "DESIR STEER"), 50, color, s->font_sans_semibold);
 
   // Draw Speed Text
   color = s->is_ego_over_limit ? COLOR_WHITE : COLOR_BLACK;
@@ -515,7 +545,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     snprintf(speedlim_str, sizeof(speedlim_str), "%d", speedlim_calc);
     ui_draw_text(s->vg, text_x, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), speedlim_str, 48*2.5, color, s->font_sans_bold);
   } else {
-    ui_draw_text(s->vg, text_x, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), "N/A", 42*2.5, color, s->font_sans_semibold);
+    ui_draw_text(s->vg, text_x, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), (strcmp(s->dragon_locale, "zh-TW") == 0? "未設" : strcmp(s->dragon_locale, "zh-CN") == 0? "未设" : "N/A"), 42*2.5, color, s->font_sans_semibold);
   }
 }
 
@@ -529,13 +559,43 @@ static void ui_draw_vision_speed(UIState *s) {
   const int viz_speed_x = scene->ui_viz_rx+((scene->ui_viz_rw/2)-(viz_speed_w/2));
   char speed_str[32];
 
-  nvgBeginPath(s->vg);
-  nvgRect(s->vg, viz_speed_x, box_y, viz_speed_w, header_h);
-  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+  if (s->dragon_ui_speed) {
+    nvgBeginPath(s->vg);
+    nvgRect(s->vg, viz_speed_x, box_y, viz_speed_w, header_h);
+    nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
 
-  snprintf(speed_str, sizeof(speed_str), "%d", (int)speed);
-  ui_draw_text(s->vg, viz_speed_x + viz_speed_w / 2, 240, speed_str, 96*2.5, COLOR_WHITE, s->font_sans_bold);
-  ui_draw_text(s->vg, viz_speed_x + viz_speed_w / 2, 320, s->is_metric?"kph":"mph", 36*2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+    snprintf(speed_str, sizeof(speed_str), "%d", (int)speed);
+    ui_draw_text(s->vg, viz_speed_x + viz_speed_w / 2, 240, speed_str, 96*2.5, COLOR_WHITE, s->font_sans_bold);
+    ui_draw_text(s->vg, viz_speed_x + viz_speed_w / 2, 320, s->is_metric?"km/h":"mph", 36*2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+  }
+
+  // dp blinker, from kegman
+  if (s->dragon_ui_blinker) {
+    if(s->scene.leftBlinker) {
+      nvgBeginPath(s->vg);
+      nvgMoveTo(s->vg, viz_speed_x, box_y + header_h/4);
+      nvgLineTo(s->vg, viz_speed_x - viz_speed_w/2, box_y + header_h/4 + header_h/4);
+      nvgLineTo(s->vg, viz_speed_x, box_y + header_h/2 + header_h/4);
+      nvgClosePath(s->vg);
+      nvgFillColor(s->vg, nvgRGBA(23,134,68,s->scene.blinker_blinkingrate>=50?210:60));
+      nvgFill(s->vg);
+    }
+
+    if(s->scene.rightBlinker) {
+      nvgBeginPath(s->vg);
+      nvgMoveTo(s->vg, viz_speed_x+viz_speed_w, box_y + header_h/4);
+      nvgLineTo(s->vg, viz_speed_x+viz_speed_w + viz_speed_w/2, box_y + header_h/4 + header_h/4);
+      nvgLineTo(s->vg, viz_speed_x+viz_speed_w, box_y + header_h/2 + header_h/4);
+      nvgClosePath(s->vg);
+      nvgFillColor(s->vg, nvgRGBA(23,134,68,s->scene.blinker_blinkingrate>=50?210:60));
+      nvgFill(s->vg);
+    }
+
+    if(s->scene.leftBlinker || s->scene.rightBlinker) {
+      s->scene.blinker_blinkingrate -= 3;
+      if(s->scene.blinker_blinkingrate<0) s->scene.blinker_blinkingrate = 120;
+    }
+  }
 }
 
 static void ui_draw_vision_event(UIState *s) {
@@ -575,6 +635,61 @@ static void ui_draw_vision_face(UIState *s) {
   const int face_x = (s->scene.ui_viz_rx + face_size + (bdr_s * 2));
   const int face_y = (footer_y + ((footer_h - face_size) / 2));
   ui_draw_circle_image(s->vg, face_x, face_y, face_size, s->img_face, s->scene.monitoring_active);
+}
+
+static void ui_draw_df_button(UIState *s) {
+  nvgBeginPath(s->vg);
+  nvgRoundedRect(s->vg, df_btn_x, df_btn_y, df_btn_w, df_btn_h, 20);
+  nvgStrokeColor(s->vg, COLOR_WHITE_ALPHA(80));
+  nvgStrokeWidth(s->vg, 6);
+  nvgStroke(s->vg);
+
+  nvgFontFaceId(s->vg,  s->font_sans_regular);
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(200));
+  nvgFontSize(s->vg, (strcmp(s->dragon_locale, "zh-TW") == 0? 96 : strcmp(s->dragon_locale, "zh-CN") == 0? 96 : 48));
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER);
+  int val = s->dragon_df_mode;
+
+  nvgText(s->vg, df_btn_x + df_btn_w / 2, df_btn_y + df_btn_h / 2,
+  val == 1? (strcmp(s->dragon_locale, "zh-TW") == 0? "長距" : strcmp(s->dragon_locale, "zh-CN") == 0? "长距" : "LONG") :
+  val == 2? (strcmp(s->dragon_locale, "zh-TW") == 0? "正常" : strcmp(s->dragon_locale, "zh-CN") == 0? "正常" : "NORMAL") :
+  (strcmp(s->dragon_locale, "zh-TW") == 0? "短距" : strcmp(s->dragon_locale, "zh-CN") == 0? "短距" : "SHORT"),
+  NULL);
+
+  nvgFontFaceId(s->vg,  s->font_sans_regular);
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(200));
+  nvgFontSize(s->vg, 37.5);
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER);
+  nvgText(s->vg, df_btn_x + df_btn_w / 2, df_btn_y + df_btn_h - 10,
+  (strcmp(s->dragon_locale, "zh-TW") == 0? "車距" : strcmp(s->dragon_locale, "zh-CN") == 0? "车距" : "FOLLOW"),
+  NULL);
+}
+
+static void ui_draw_ap_button(UIState *s) {
+  nvgBeginPath(s->vg);
+  nvgRoundedRect(s->vg, ap_btn_x, ap_btn_y, ap_btn_w, ap_btn_h, 20);
+  nvgStrokeColor(s->vg, COLOR_WHITE_ALPHA(80));
+  nvgStrokeWidth(s->vg, 6);
+  nvgStroke(s->vg);
+
+  nvgFontFaceId(s->vg,  s->font_sans_regular);
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(200));
+  nvgFontSize(s->vg, (strcmp(s->dragon_locale, "zh-TW") == 0? 96 : strcmp(s->dragon_locale, "zh-CN") == 0? 96 : 48));
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER);
+  int val = s->dragon_ap_mode;
+  nvgText(s->vg, ap_btn_x + ap_btn_w / 2, ap_btn_y + ap_btn_h / 2,
+  val == 1? (strcmp(s->dragon_locale, "zh-TW") == 0? "節能" : strcmp(s->dragon_locale, "zh-CN") == 0? "节能" : "ECO") :
+  val == 2? (strcmp(s->dragon_locale, "zh-TW") == 0? "正常" : strcmp(s->dragon_locale, "zh-CN") == 0? "正常" : "NORMAL") :
+  (strcmp(s->dragon_locale, "zh-TW") == 0? "運動" : strcmp(s->dragon_locale, "zh-CN") == 0? "运动" : "SPORT"),
+  NULL);
+
+  nvgFontFaceId(s->vg,  s->font_sans_regular);
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(200));
+  nvgFontSize(s->vg, 37.5);
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER);
+  nvgText(s->vg, ap_btn_x + ap_btn_w / 2, ap_btn_y + ap_btn_h - 10,
+  (strcmp(s->dragon_locale, "zh-TW") == 0? "加速" : strcmp(s->dragon_locale, "zh-CN") == 0? "加速" : "ACCEL"),
+  NULL);
 }
 
 static void ui_draw_driver_view(UIState *s) {
@@ -637,26 +752,332 @@ static void ui_draw_vision_header(UIState *s) {
   int ui_viz_rx = scene->ui_viz_rx;
   int ui_viz_rw = scene->ui_viz_rw;
 
-  NVGpaint gradient = nvgLinearGradient(s->vg, ui_viz_rx,
-                        (box_y+(header_h-(header_h/2.5))),
-                        ui_viz_rx, box_y+header_h,
-                        nvgRGBAf(0,0,0,0.45), nvgRGBAf(0,0,0,0));
-  ui_draw_rect(s->vg, ui_viz_rx, box_y, ui_viz_rw, header_h, gradient);
-
-  ui_draw_vision_maxspeed(s);
-
+  if (s->dragon_driving_ui) {
+    NVGpaint gradient = nvgLinearGradient(s->vg, ui_viz_rx,
+                          (box_y+(header_h-(header_h/2.5))),
+                          ui_viz_rx, box_y+header_h,
+                          nvgRGBAf(0,0,0,0.45), nvgRGBAf(0,0,0,0));
+    ui_draw_rect(s->vg, ui_viz_rx, box_y, ui_viz_rw, header_h, gradient);
+  }
+  if (s->dragon_ui_maxspeed) {
+    ui_draw_vision_maxspeed(s);
+  }
 #ifdef SHOW_SPEEDLIMIT
   ui_draw_vision_speedlimit(s);
 #endif
   ui_draw_vision_speed(s);
-  ui_draw_vision_event(s);
+  if (s->dragon_ui_event) {
+    ui_draw_vision_event(s);
+  }
+}
+
+static void ui_draw_infobar(UIState *s) {
+  const UIScene *scene = &s->scene;
+  int ui_viz_rx = scene->ui_viz_rx;
+  bool hasSidebar = !s->scene.uilayout_sidebarcollapsed;
+  int rect_w = vwp_w - ui_viz_rx - bdr_s;
+  int rect_h = 80;
+  int rect_x = (hasSidebar? (bdr_s+sbr_w) : ui_viz_rx);
+  int rect_y = vwp_h - bdr_s - rect_h;
+  int text_x = rect_w / 2 + ui_viz_rx;
+  int text_y = rect_y + 55;
+
+  char infobar[100];
+  // create time string
+  char date_time[20];
+  time_t rawtime = time(NULL);
+  struct tm timeinfo;
+  localtime_r(&rawtime, &timeinfo);
+  strftime(date_time, sizeof(date_time),"%D %T", &timeinfo);
+
+  // Create temp string
+  char temp[6];
+  snprintf(temp, sizeof(temp), "%02d°C", s->scene.paTemp);
+
+  // create battery percentage string
+  char battery[5];
+  snprintf(battery, sizeof(battery), "%02d%%", s->scene.batteryPercent);
+
+  if (s->dragon_ui_dev_mini) {
+    char rel_steer[9];
+    snprintf(rel_steer, sizeof(rel_steer), "%s%05.1f°", s->scene.angleSteers < 0? "-" : "+", fabs(s->scene.angleSteers));
+
+    char des_steer[9];
+    if (s->scene.engaged) {
+      snprintf(des_steer, sizeof(des_steer), "%s%05.1f°", s->scene.angleSteersDes < 0? "-" : "+", fabs(s->scene.angleSteersDes));
+    } else {
+      snprintf(des_steer, sizeof(des_steer), "%7s", "-");
+    }
+
+    char lead_dist[8];
+    if (s->scene.lead_status) {
+      snprintf(lead_dist, sizeof(lead_dist), "%06.2fm", s->scene.lead_d_rel);
+    } else {
+      snprintf(lead_dist, sizeof(lead_dist), "%7s", "-");
+    }
+
+    snprintf(
+      infobar,
+      sizeof(infobar),
+      "%s /TMP: %s /BAT: %s /REL: %s /DES: %s /DIS: %s",
+      date_time,
+      temp,
+      battery,
+      rel_steer,
+      des_steer,
+      lead_dist
+    );
+  } else {
+    snprintf(
+      infobar,
+      sizeof(infobar),
+      "%s /TMP: %s /BAT: %s",
+      date_time,
+      temp,
+      battery
+    );
+  }
+
+  nvgBeginPath(s->vg);
+  nvgRect(s->vg, rect_x, rect_y, rect_w, rect_h);
+  nvgFillColor(s->vg, COLOR_BLACK_ALPHA(100));
+  nvgFill(s->vg);
+
+  nvgFontSize(s->vg, hasSidebar? 35:42);
+  nvgFontFaceId(s->vg, s->font_courbd);
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(200));
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER);
+  nvgText(s->vg, text_x, text_y, infobar, NULL);
+}
+
+//BB START: functions added for the display of various items
+static int bb_ui_draw_measure(UIState *s,  const char* bb_value, const char* bb_uom, const char* bb_label,
+    int bb_x, int bb_y, int bb_uom_dx,
+    NVGcolor bb_valueColor, NVGcolor bb_labelColor, NVGcolor bb_uomColor,
+    int bb_valueFontSize, int bb_labelFontSize, int bb_uomFontSize ) {
+  const UIScene *scene = &s->scene;
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+  int dx = 0;
+  if (strlen(bb_uom) > 0) {
+    dx = (int)(bb_uomFontSize*2.5/2);
+  }
+  //print value
+  nvgFontFaceId(s->vg, s->font_sans_bold);
+  nvgFontSize(s->vg, bb_valueFontSize*2.5);
+  nvgFillColor(s->vg, bb_valueColor);
+  nvgText(s->vg, bb_x-dx/2, bb_y+ (int)(bb_valueFontSize*2.5)+5, bb_value, NULL);
+  //print label
+  nvgFontFaceId(s->vg, s->font_sans_regular);
+  nvgFontSize(s->vg, bb_labelFontSize*2.5);
+  nvgFillColor(s->vg, bb_labelColor);
+  nvgText(s->vg, bb_x, bb_y + (int)(bb_valueFontSize*2.5)+5 + (int)(bb_labelFontSize*2.5)+5, bb_label, NULL);
+  //print uom
+  if (strlen(bb_uom) > 0) {
+    nvgSave(s->vg);
+    int rx =bb_x + bb_uom_dx + bb_valueFontSize -3;
+    int ry = bb_y + (int)(bb_valueFontSize*2.5/2)+25;
+    nvgTranslate(s->vg,rx,ry);
+    nvgRotate(s->vg, -1.5708); //-90deg in radians
+    nvgFontFaceId(s->vg, s->font_sans_regular);
+    nvgFontSize(s->vg, (int)(bb_uomFontSize*2.5));
+    nvgFillColor(s->vg, bb_uomColor);
+    nvgText(s->vg, 0, 0, bb_uom, NULL);
+    nvgRestore(s->vg);
+  }
+  return (int)((bb_valueFontSize + bb_labelFontSize)*2.5) + 5;
+}
+
+static void bb_ui_draw_measures_left(UIState *s, int bb_x, int bb_y, int bb_w ) {
+  const UIScene *scene = &s->scene;
+  int bb_rx = bb_x + (int)(bb_w/2);
+  int bb_ry = bb_y;
+  int bb_h = 5;
+  NVGcolor lab_color = COLOR_WHITE_ALPHA(200);
+  NVGcolor uom_color = COLOR_WHITE_ALPHA(200);
+  int value_fontSize=30;
+  int label_fontSize=15;
+  int uom_fontSize = 15;
+  int bb_uom_dx =  (int)(bb_w /2 - uom_fontSize*2.5) ;
+
+  //add visual radar relative distance
+  if (true) {
+    char val_str[16];
+    char uom_str[6];
+    NVGcolor val_color = COLOR_WHITE_ALPHA(200);
+    if (scene->lead_status) {
+      //show RED if less than 5 meters
+      //show orange if less than 15 meters
+      if((int)(scene->lead_d_rel) < 15) {
+        val_color = nvgRGBA(255, 188, 3, 200);
+      }
+      if((int)(scene->lead_d_rel) < 5) {
+        val_color = nvgRGBA(255, 0, 0, 200);
+      }
+      // lead car relative distance is always in meters
+      snprintf(val_str, sizeof(val_str), "%d", (int)scene->lead_d_rel);
+    } else {
+       snprintf(val_str, sizeof(val_str), "-");
+    }
+    snprintf(uom_str, sizeof(uom_str), "m   ");
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str,
+       (strcmp(s->dragon_locale, "zh-TW") == 0? "真實車距" : strcmp(s->dragon_locale, "zh-CN") == 0? "真实车距" : "REL DIST"),
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+
+  //add visual radar relative speed
+  if (true) {
+    char val_str[16];
+    char uom_str[6];
+    NVGcolor val_color = COLOR_WHITE_ALPHA(200);
+    if (scene->lead_status) {
+      //show Orange if negative speed (approaching)
+      //show Orange if negative speed faster than 5mph (approaching fast)
+      if((int)(scene->lead_v_rel) < 0) {
+        val_color = nvgRGBA(255, 188, 3, 200);
+      }
+      if((int)(scene->lead_v_rel) < -5) {
+        val_color = nvgRGBA(255, 0, 0, 200);
+      }
+      // lead car relative speed is always in meters
+      if (s->is_metric) {
+         snprintf(val_str, sizeof(val_str), "%d", (int)(scene->lead_v_rel * 3.6 + 0.5));
+      } else {
+         snprintf(val_str, sizeof(val_str), "%d", (int)(scene->lead_v_rel * 2.2374144 + 0.5));
+      }
+    } else {
+       snprintf(val_str, sizeof(val_str), "-");
+    }
+    if (s->is_metric) {
+      snprintf(uom_str, sizeof(uom_str), "km/h");;
+    } else {
+      snprintf(uom_str, sizeof(uom_str), "mph");
+    }
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str,
+        (strcmp(s->dragon_locale, "zh-TW") == 0? "相對速度" : strcmp(s->dragon_locale, "zh-CN") == 0? "相对速度" : "REAL SPEED"),
+        bb_rx, bb_ry, bb_uom_dx,
+        val_color, lab_color, uom_color,
+        value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+
+  //finally draw the frame
+  bb_h += 20;
+  nvgBeginPath(s->vg);
+    nvgRoundedRect(s->vg, bb_x, bb_y, bb_w, bb_h, 20);
+    nvgStrokeColor(s->vg, COLOR_WHITE_ALPHA(80));
+    nvgStrokeWidth(s->vg, 6);
+    nvgStroke(s->vg);
+}
+
+static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w ) {
+  const UIScene *scene = &s->scene;
+  int bb_rx = bb_x + (int)(bb_w/2);
+  int bb_ry = bb_y;
+  int bb_h = 5;
+  NVGcolor lab_color = COLOR_WHITE_ALPHA(200);
+  NVGcolor uom_color = COLOR_WHITE_ALPHA(200);
+  int value_fontSize=30;
+  int label_fontSize=15;
+  int uom_fontSize = 15;
+  int bb_uom_dx =  (int)(bb_w /2 - uom_fontSize*2.5) ;
+
+  //add  steering angle
+  if (true) {
+    char val_str[16];
+    char uom_str[6];
+    NVGcolor val_color = COLOR_WHITE_ALPHA(200);
+      //show Orange if more than 6 degrees
+      //show red if  more than 12 degrees
+      if(((int)(scene->angleSteers) < -6) || ((int)(scene->angleSteers) > 6)) {
+        val_color = nvgRGBA(255, 188, 3, 200);
+      }
+      if(((int)(scene->angleSteers) < -12) || ((int)(scene->angleSteers) > 12)) {
+        val_color = nvgRGBA(255, 0, 0, 200);
+      }
+      // steering is in degrees
+      snprintf(val_str, sizeof(val_str), "%.1f°",(scene->angleSteers));
+
+      snprintf(uom_str, sizeof(uom_str), "");
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str,
+      (strcmp(s->dragon_locale, "zh-TW") == 0? "實際轉角" : strcmp(s->dragon_locale, "zh-CN") == 0? "实际转角" : "REAL STEER"),
+      bb_rx, bb_ry, bb_uom_dx,
+      val_color, lab_color, uom_color,
+      value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+
+  //add  desired steering angle
+  if (true) {
+    char val_str[16];
+    char uom_str[6];
+    NVGcolor val_color = COLOR_WHITE_ALPHA(200);
+    //show Orange if more than 6 degrees
+    //show red if  more than 12 degrees
+    if(((int)(scene->angleSteersDes) < -6) || ((int)(scene->angleSteersDes) > 6)) {
+      val_color = nvgRGBA(255, 188, 3, 200);
+    }
+    if(((int)(scene->angleSteersDes) < -12) || ((int)(scene->angleSteersDes) > 12)) {
+      val_color = nvgRGBA(255, 0, 0, 200);
+    }
+    // steering is in degrees
+    snprintf(val_str, sizeof(val_str), "%.1f°",(scene->angleSteersDes));
+
+    snprintf(uom_str, sizeof(uom_str), "");
+    bb_h +=bb_ui_draw_measure(s,  val_str, uom_str,
+      (strcmp(s->dragon_locale, "zh-TW") == 0? "預測轉角" : strcmp(s->dragon_locale, "zh-CN") == 0? "预测转角" : "DESIR STEER"),
+      bb_rx, bb_ry, bb_uom_dx,
+      val_color, lab_color, uom_color,
+      value_fontSize, label_fontSize, uom_fontSize );
+    bb_ry = bb_y + bb_h;
+  }
+
+  //finally draw the frame
+  bb_h += 20;
+  nvgBeginPath(s->vg);
+    nvgRoundedRect(s->vg, bb_x, bb_y, bb_w, bb_h, 20);
+    nvgStrokeColor(s->vg, COLOR_WHITE_ALPHA(80));
+    nvgStrokeWidth(s->vg, 6);
+    nvgStroke(s->vg);
+}
+
+static void ui_draw_bbui(UIState *s) {
+    const UIScene *scene = &s->scene;
+    const int bb_dml_w = 180;
+    const int bb_dml_x = (scene->ui_viz_rx + (bdr_s * 2));
+    const int bb_dml_y = (box_y + (bdr_s * 1.5)) + 220;
+
+    const int bb_dmr_w = 180;
+    const int bb_dmr_x = scene->ui_viz_rx + scene->ui_viz_rw - bb_dmr_w - (bdr_s * 2);
+    const int bb_dmr_y = (box_y + (bdr_s * 1.5)) + 220;
+
+    bb_ui_draw_measures_right(s, bb_dml_x, bb_dml_y, bb_dml_w);
+    bb_ui_draw_measures_left(s, bb_dmr_x, bb_dmr_y, bb_dmr_w);
 }
 
 static void ui_draw_vision_footer(UIState *s) {
   nvgBeginPath(s->vg);
   nvgRect(s->vg, s->scene.ui_viz_rx, footer_y, s->scene.ui_viz_rw, footer_h);
 
-  ui_draw_vision_face(s);
+  if (s->dragon_ui_face) {
+    ui_draw_vision_face(s);
+  }
+  if (!s->dragon_waze_mode) {
+    if ((int)s->dragon_df_mode > 0) {
+      ui_draw_df_button(s);
+    }
+    if ((int)s->dragon_ap_mode > 0) {
+      ui_draw_ap_button(s);
+    }
+  }
+  if (s->dragon_ui_dev) {
+    ui_draw_bbui(s);
+  }
+  if (s->dragon_ui_dev_mini || s->dragon_enable_dashcam || s->dragon_waze_mode) {
+    ui_draw_infobar(s);
+  }
 
 #ifdef SHOW_SPEEDLIMIT
   // ui_draw_vision_map(s);
@@ -717,13 +1138,20 @@ static void ui_draw_vision(UIState *s) {
   glEnable(GL_SCISSOR_TEST);
   glViewport(scene->ui_viz_rx+scene->ui_viz_ro, s->fb_h-(box_y+box_h), viz_w, box_h);
   glScissor(scene->ui_viz_rx, s->fb_h-(box_y+box_h), scene->ui_viz_rw, box_h);
-  draw_frame(s);
+  if (s->dragon_driving_ui) {
+    draw_frame(s);
+  }
+  if (s->dragon_ui_dm_view) {
+    glViewport(1240, 110, viz_w*0.4, box_h*0.4);
+    draw_front_frame(s);
+    glClear(GL_STENCIL_BUFFER_BIT);
+  }
   glDisable(GL_SCISSOR_TEST);
 
   glViewport(0, 0, s->fb_w, s->fb_h);
 
   // Draw augmented elements
-  if (!scene->frontview && !scene->fullview) {
+  if (s->dragon_driving_ui && !scene->frontview && !scene->fullview) {
     ui_draw_world(s);
   }
 
@@ -865,11 +1293,11 @@ void ui_nvg_init(UIState *s) {
 
   s->font_courbd = nvgCreateFont(s->vg, "courbd", "../assets/fonts/courbd.ttf");
   assert(s->font_courbd >= 0);
-  s->font_sans_regular = nvgCreateFont(s->vg, "sans-regular", "../assets/fonts/opensans_regular.ttf");
+  s->font_sans_regular = nvgCreateFont(s->vg, "sans-regular", "../../dragonpilot/cjk-fonts/NotoSansCJKtc-Regular.otf");
   assert(s->font_sans_regular >= 0);
-  s->font_sans_semibold = nvgCreateFont(s->vg, "sans-semibold", "../assets/fonts/opensans_semibold.ttf");
+  s->font_sans_semibold = nvgCreateFont(s->vg, "sans-semibold", "../../dragonpilot/cjk-fonts/NotoSansCJKtc-Medium.otf");
   assert(s->font_sans_semibold >= 0);
-  s->font_sans_bold = nvgCreateFont(s->vg, "sans-bold", "../assets/fonts/opensans_bold.ttf");
+  s->font_sans_bold = nvgCreateFont(s->vg, "sans-bold", "../../dragonpilot/cjk-fonts/NotoSansCJKtc-Bold.otf");
   assert(s->font_sans_bold >= 0);
 
   s->img_wheel = nvgCreateImage(s->vg, "../assets/img_chffr_wheel.png", 1);

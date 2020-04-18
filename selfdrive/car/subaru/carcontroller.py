@@ -3,6 +3,10 @@ from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.subaru import subarucan
 from selfdrive.car.subaru.values import DBC
 from opendbc.can.packer import CANPacker
+from common.params import Params
+params = Params()
+from common.dp import get_last_modified
+from common.dp import common_controller_update, common_controller_ctrl
 
 
 class CarControllerParams():
@@ -30,8 +34,23 @@ class CarController():
     self.params = CarControllerParams()
     self.packer = CANPacker(DBC[CP.carFingerprint]['pt'])
 
+    # dp
+    self.dragon_enable_steering_on_signal = False
+    self.dragon_lat_ctrl = True
+    self.dp_last_modified = None
+    self.lane_change_enabled = True
+
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert, left_line, right_line):
     """ Controls thread """
+
+    # dp
+    if frame % 500 == 0:
+      modified = get_last_modified()
+      if self.dp_last_modified != modified:
+        self.dragon_lat_ctrl, \
+        self.lane_change_enabled, \
+        self.dragon_enable_steering_on_signal = common_controller_update(self.lane_change_enabled)
+        self.dp_last_modified = modified
 
     P = self.params
 
@@ -55,6 +74,14 @@ class CarController():
 
       if not lkas_enabled:
         apply_steer = 0
+
+      # dp
+      apply_steer = common_controller_ctrl(enabled,
+                                           self.dragon_lat_ctrl,
+                                           self.dragon_enable_steering_on_signal,
+                                           CS.out.leftBlinker,
+                                           CS.out.rightBlinker,
+                                           apply_steer)
 
       can_sends.append(subarucan.create_steering_control(self.packer, apply_steer, frame, P.STEER_STEP))
 

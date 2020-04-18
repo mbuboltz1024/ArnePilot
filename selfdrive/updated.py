@@ -33,6 +33,7 @@ from pathlib import Path
 import fcntl
 import threading
 from cffi import FFI
+from common.dp import is_online
 
 from common.basedir import BASEDIR
 from common.params import Params
@@ -116,8 +117,15 @@ def set_update_available_params(new_version=False):
   params.put("LastUpdateTime", t.encode('utf8'))
 
   if new_version:
+    branch_name = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], FINALIZED).rstrip()
+    if branch_name == "testing":
+      postfix = ''
+    elif branch_name == "devel-i18n":
+      postfix = '-DEV'
+    else:
+      postfix = '-REL'
     try:
-      with open(os.path.join(FINALIZED, "RELEASES.md"), "rb") as f:
+      with open(os.path.join(FINALIZED, f"CHANGELOGS{postfix}.md"), "rb") as f:
         r = f.read()
       r = r[:r.find(b'\n\n')]  # Slice latest release notes
       params.put("ReleaseNotes", r + b"\n")

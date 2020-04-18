@@ -7,6 +7,10 @@ from selfdrive.car import create_gas_command
 from selfdrive.car.honda import hondacan
 from selfdrive.car.honda.values import CruiseButtons, CAR, VISUAL_HUD
 from opendbc.can.packer import CANPacker
+from common.params import Params
+params = Params()
+from common.dp import get_last_modified
+from common.dp import common_controller_update, common_controller_ctrl
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -72,7 +76,7 @@ def process_hud_alert(hud_alert):
 
 HUDData = namedtuple("HUDData",
                      ["pcm_accel", "v_cruise",  "car",
-                     "lanes", "fcw", "acc_alert", "steer_required"])
+                     "lanes", "fcw", "acc_alert", "steer_required", "dashed_lanes"])
 
 class CarControllerParams():
   def __init__(self, CP):
@@ -96,9 +100,24 @@ class CarController():
 
     self.params = CarControllerParams(CP)
 
+    # dp
+    self.dragon_enable_steering_on_signal = False
+    self.dragon_lat_ctrl = True
+    self.dp_last_modified = None
+    self.lane_change_enabled = True
+
   def update(self, enabled, CS, frame, actuators, \
              pcm_speed, pcm_override, pcm_cancel_cmd, pcm_accel, \
              hud_v_cruise, hud_show_lanes, hud_show_car, hud_alert):
+
+    # dp
+    if frame % 500 == 0:
+      modified = get_last_modified()
+      if self.dp_last_modified != modified:
+        self.dragon_lat_ctrl, \
+        self.lane_change_enabled, \
+        self.dragon_enable_steering_on_signal = common_controller_update(self.lane_change_enabled)
+        self.dp_last_modified = modified
 
     P = self.params
 
@@ -130,7 +149,7 @@ class CarController():
     fcw_display, steer_required, acc_alert = process_hud_alert(hud_alert)
 
     hud = HUDData(int(pcm_accel), int(round(hud_v_cruise)), hud_car,
-                  hud_lanes, fcw_display, acc_alert, steer_required)
+                  hud_lanes, fcw_display, acc_alert, steer_required, CS.lkMode)
 
     # **** process the car messages ****
 
@@ -139,10 +158,18 @@ class CarController():
     apply_brake = int(clip(self.brake_last * P.BRAKE_MAX, 0, P.BRAKE_MAX - 1))
     apply_steer = int(interp(-actuators.steer * P.STEER_MAX, P.STEER_LOOKUP_BP, P.STEER_LOOKUP_V))
 
-    lkas_active = enabled and not CS.steer_not_allowed
+    lkas_active = enabled and not CS.steer_not_allowed and CS.lkMode
 
     # Send CAN commands.
     can_sends = []
+
+    # dp
+    lkas_active = common_controller_ctrl(enabled,
+                                         self.dragon_lat_ctrl,
+                                         self.dragon_enable_steering_on_signal,
+                                         CS.out.leftBlinker,
+                                         CS.out.rightBlinker,
+                                         lkas_active)
 
     # Send steering command.
     idx = frame % 4

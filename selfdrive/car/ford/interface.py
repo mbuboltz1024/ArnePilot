@@ -51,6 +51,7 @@ class CarInterface(CarInterfaceBase):
 
   # returns a car.CarState
   def update(self, c, can_strings):
+    self.dp_load_params('ford')
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
 

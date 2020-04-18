@@ -1,0 +1,486 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-23 17:17+1000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: controls/lib/alerts.py:82 controls/lib/alerts.py:89
+msgid "BRAKE!"
+msgstr ""
+
+#: controls/lib/alerts.py:83 controls/lib/alerts.py:90
+msgid "Risk of Collision"
+msgstr ""
+
+#: controls/lib/alerts.py:96 controls/lib/alerts.py:103
+#: controls/lib/alerts.py:110 controls/lib/alerts.py:215
+#: controls/lib/alerts.py:229 controls/lib/alerts.py:263
+#: controls/lib/alerts.py:824
+msgid "TAKE CONTROL"
+msgstr ""
+
+#: controls/lib/alerts.py:97
+msgid "Turn Exceeds Steering Limit"
+msgstr ""
+
+#: controls/lib/alerts.py:104 controls/lib/alerts.py:111
+#: controls/lib/alerts.py:209
+msgid "Steering Temporarily Unavailable"
+msgstr ""
+
+#: controls/lib/alerts.py:117
+msgid "KEEP EYES ON ROAD: Driver Distracted"
+msgstr ""
+
+#: controls/lib/alerts.py:124
+msgid "KEEP EYES ON ROAD"
+msgstr ""
+
+#: controls/lib/alerts.py:125
+msgid "Driver Appears Distracted"
+msgstr ""
+
+#: controls/lib/alerts.py:131 controls/lib/alerts.py:152
+msgid "DISENGAGE IMMEDIATELY"
+msgstr ""
+
+#: controls/lib/alerts.py:132
+msgid "Driver Was Distracted"
+msgstr ""
+
+#: controls/lib/alerts.py:138
+msgid "TOUCH STEERING WHEEL: No Face Detected"
+msgstr ""
+
+#: controls/lib/alerts.py:145
+msgid "TOUCH STEERING WHEEL"
+msgstr ""
+
+#: controls/lib/alerts.py:146
+msgid "Driver Is Unresponsive"
+msgstr ""
+
+#: controls/lib/alerts.py:153
+msgid "Driver Was Unresponsive"
+msgstr ""
+
+#: controls/lib/alerts.py:159
+msgid "CHECK DRIVER FACE VISIBILITY"
+msgstr ""
+
+#: controls/lib/alerts.py:160
+msgid "Driver Monitor Model Output Uncertain"
+msgstr ""
+
+#: controls/lib/alerts.py:166
+msgid "DISENGAGEMENT REQUIRED"
+msgstr ""
+
+#: controls/lib/alerts.py:167 controls/lib/alerts.py:593
+msgid "Not in Geofenced Area"
+msgstr ""
+
+#: controls/lib/alerts.py:173
+msgid "Be ready to take over at any time"
+msgstr ""
+
+#: controls/lib/alerts.py:174 controls/lib/alerts.py:181
+#: controls/lib/alerts.py:188 controls/lib/alerts.py:195
+msgid "Always keep hands on wheel and eyes on road"
+msgstr ""
+
+#: controls/lib/alerts.py:180
+msgid "WARNING: This branch is not tested"
+msgstr ""
+
+#: controls/lib/alerts.py:187
+msgid "Dashcam mode"
+msgstr ""
+
+#: controls/lib/alerts.py:194
+msgid "Dashcam mode for unsupported car"
+msgstr ""
+
+#: controls/lib/alerts.py:201 controls/lib/alerts.py:356
+#: controls/lib/alerts.py:363 controls/lib/alerts.py:370
+#: controls/lib/alerts.py:377 controls/lib/alerts.py:384
+#: controls/lib/alerts.py:391 controls/lib/alerts.py:398
+#: controls/lib/alerts.py:405 controls/lib/alerts.py:412
+#: controls/lib/alerts.py:419 controls/lib/alerts.py:426
+#: controls/lib/alerts.py:433 controls/lib/alerts.py:441
+#: controls/lib/alerts.py:449 controls/lib/alerts.py:456
+#: controls/lib/alerts.py:463 controls/lib/alerts.py:470
+#: controls/lib/alerts.py:477 controls/lib/alerts.py:484
+#: controls/lib/alerts.py:491 controls/lib/alerts.py:498
+#: controls/lib/alerts.py:505 controls/lib/alerts.py:512
+msgid "TAKE CONTROL IMMEDIATELY"
+msgstr ""
+
+#: controls/lib/alerts.py:202
+msgid "Ethical Dilemma Detected"
+msgstr ""
+
+#: controls/lib/alerts.py:208 controls/lib/alerts.py:271
+#: controls/lib/alerts.py:278 controls/lib/alerts.py:285
+#: controls/lib/alerts.py:292 controls/lib/alerts.py:299
+#: controls/lib/alerts.py:306 controls/lib/alerts.py:313
+#: controls/lib/alerts.py:320 controls/lib/alerts.py:327
+#: controls/lib/alerts.py:334 controls/lib/alerts.py:341
+#: controls/lib/alerts.py:348 controls/lib/alerts.py:543
+#: controls/lib/alerts.py:550 controls/lib/alerts.py:557
+#: controls/lib/alerts.py:564 controls/lib/alerts.py:571
+#: controls/lib/alerts.py:578 controls/lib/alerts.py:585
+#: controls/lib/alerts.py:592 controls/lib/alerts.py:599
+#: controls/lib/alerts.py:606 controls/lib/alerts.py:613
+#: controls/lib/alerts.py:620 controls/lib/alerts.py:627
+#: controls/lib/alerts.py:634 controls/lib/alerts.py:641
+#: controls/lib/alerts.py:648 controls/lib/alerts.py:655
+#: controls/lib/alerts.py:662 controls/lib/alerts.py:669
+#: controls/lib/alerts.py:676 controls/lib/alerts.py:683
+#: controls/lib/alerts.py:690 controls/lib/alerts.py:697
+#: controls/lib/alerts.py:704 controls/lib/alerts.py:718
+msgid "openpilot Unavailable"
+msgstr ""
+
+#: controls/lib/alerts.py:216
+msgid "Resume Driving Manually"
+msgstr ""
+
+#: controls/lib/alerts.py:222
+msgid "STOPPED"
+msgstr ""
+
+#: controls/lib/alerts.py:223
+msgid "Press Resume to Move"
+msgstr ""
+
+#: controls/lib/alerts.py:230
+msgid "Steer Unavailable Below "
+msgstr ""
+
+#: controls/lib/alerts.py:236
+msgid "DEBUG ALERT"
+msgstr ""
+
+#: controls/lib/alerts.py:242
+msgid "Steer Left to Start Lane Change"
+msgstr ""
+
+#: controls/lib/alerts.py:243 controls/lib/alerts.py:250
+#: controls/lib/alerts.py:257 controls/lib/alerts.py:833
+#: controls/lib/alerts.py:840 controls/lib/alerts.py:847
+msgid "Monitor Other Vehicles"
+msgstr ""
+
+#: controls/lib/alerts.py:249
+msgid "Steer Right to Start Lane Change"
+msgstr ""
+
+#: controls/lib/alerts.py:256 controls/lib/alerts.py:846
+msgid "Changing Lane"
+msgstr ""
+
+#: controls/lib/alerts.py:264 controls/lib/alerts.py:614
+msgid "Vision Model Output Uncertain"
+msgstr ""
+
+#: controls/lib/alerts.py:272
+msgid "Main Switch Off"
+msgstr ""
+
+#: controls/lib/alerts.py:279
+msgid "Calibration Needs Data. Upload Drive, Try Again"
+msgstr ""
+
+#: controls/lib/alerts.py:286
+msgid "Out of Storage Space"
+msgstr ""
+
+#: controls/lib/alerts.py:293
+msgid "Pedal Pressed During Attempt"
+msgstr ""
+
+#: controls/lib/alerts.py:300
+msgid "Speed Too Low"
+msgstr ""
+
+#: controls/lib/alerts.py:307
+msgid "Brake Hold Active"
+msgstr ""
+
+#: controls/lib/alerts.py:314
+msgid "Park Brake Engaged"
+msgstr ""
+
+#: controls/lib/alerts.py:321 controls/lib/alerts.py:478
+#: controls/lib/alerts.py:642
+msgid "Cruise Fault: Restart the Car"
+msgstr ""
+
+#: controls/lib/alerts.py:328 controls/lib/alerts.py:406
+msgid "Low Battery"
+msgstr ""
+
+#: controls/lib/alerts.py:335 controls/lib/alerts.py:782
+msgid "No Data from Device Sensors"
+msgstr ""
+
+#: controls/lib/alerts.py:342 controls/lib/alerts.py:789
+msgid "Speaker not found"
+msgstr ""
+
+#: controls/lib/alerts.py:349
+msgid "Distraction Level Too High"
+msgstr ""
+
+#: controls/lib/alerts.py:357
+msgid "System Overheated"
+msgstr ""
+
+#: controls/lib/alerts.py:364 controls/lib/alerts.py:551
+msgid "Gear not D"
+msgstr ""
+
+#: controls/lib/alerts.py:371
+msgid "Calibration Invalid: Reposition Device and Recalibrate"
+msgstr ""
+
+#: controls/lib/alerts.py:378 controls/lib/alerts.py:565
+msgid "Calibration in Progress"
+msgstr ""
+
+#: controls/lib/alerts.py:385
+msgid "Door Open"
+msgstr ""
+
+#: controls/lib/alerts.py:392
+msgid "Seatbelt Unlatched"
+msgstr ""
+
+#: controls/lib/alerts.py:399 controls/lib/alerts.py:586
+msgid "ESP Off"
+msgstr ""
+
+#: controls/lib/alerts.py:413 controls/lib/alerts.py:684
+msgid "Communication Issue between Processes"
+msgstr ""
+
+#: controls/lib/alerts.py:420 controls/lib/alerts.py:691
+msgid "Radar Communication Issue"
+msgstr ""
+
+#: controls/lib/alerts.py:427 controls/lib/alerts.py:434
+#: controls/lib/alerts.py:600 controls/lib/alerts.py:607
+msgid "Radar Error: Restart the Car"
+msgstr ""
+
+#: controls/lib/alerts.py:442 controls/lib/alerts.py:705
+msgid "Low Memory: Reboot Your Device"
+msgstr ""
+
+#: controls/lib/alerts.py:450 controls/lib/alerts.py:621
+msgid "Controls Failed"
+msgstr ""
+
+#: controls/lib/alerts.py:457
+msgid "Controls Mismatch"
+msgstr ""
+
+#: controls/lib/alerts.py:464 controls/lib/alerts.py:628
+msgid "CAN Error: Check Connections"
+msgstr ""
+
+#: controls/lib/alerts.py:471 controls/lib/alerts.py:635
+msgid "LKAS Fault: Restart the Car"
+msgstr ""
+
+#: controls/lib/alerts.py:485
+msgid "Gas Fault: Restart the Car"
+msgstr ""
+
+#: controls/lib/alerts.py:492 controls/lib/alerts.py:656
+msgid "Reverse Gear"
+msgstr ""
+
+#: controls/lib/alerts.py:499
+msgid "Cruise Is Off"
+msgstr ""
+
+#: controls/lib/alerts.py:506 controls/lib/alerts.py:677
+msgid "Planner Solution Error"
+msgstr ""
+
+#: controls/lib/alerts.py:513 controls/lib/alerts.py:719
+#: controls/lib/alerts.py:810
+msgid "Harness Malfunction"
+msgstr ""
+
+#: controls/lib/alerts.py:521 controls/lib/alerts.py:528
+msgid "openpilot Canceled"
+msgstr ""
+
+#: controls/lib/alerts.py:522
+msgid "No close lead car"
+msgstr ""
+
+#: controls/lib/alerts.py:529
+msgid "Speed too low"
+msgstr ""
+
+#: controls/lib/alerts.py:535 controls/lib/alerts.py:711
+msgid "Speed Too High"
+msgstr ""
+
+#: controls/lib/alerts.py:536
+msgid "Slow down to resume operation"
+msgstr ""
+
+#: controls/lib/alerts.py:544
+msgid "System overheated"
+msgstr ""
+
+#: controls/lib/alerts.py:558
+msgid "Calibration Invalid: Reposition Device & Recalibrate"
+msgstr ""
+
+#: controls/lib/alerts.py:572
+msgid "Door open"
+msgstr ""
+
+#: controls/lib/alerts.py:579
+msgid "Seatbelt unlatched"
+msgstr ""
+
+#: controls/lib/alerts.py:649
+msgid "Gas Error: Restart the Car"
+msgstr ""
+
+#: controls/lib/alerts.py:663
+msgid "Cruise is Off"
+msgstr ""
+
+#: controls/lib/alerts.py:670
+msgid "No Close Lead Car"
+msgstr ""
+
+#: controls/lib/alerts.py:698
+msgid "Please Connect to Internet"
+msgstr ""
+
+#: controls/lib/alerts.py:712
+msgid "Slow down to engage"
+msgstr ""
+
+#: controls/lib/alerts.py:726
+msgid "LKAS Fault: Restart the car to engage"
+msgstr ""
+
+#: controls/lib/alerts.py:733 controls/lib/alerts.py:740
+msgid "Cruise Fault: Restart the car to engage"
+msgstr ""
+
+#: controls/lib/alerts.py:747
+msgid "Calibration in Progress: "
+msgstr ""
+
+#: controls/lib/alerts.py:748
+msgid "Drive Above "
+msgstr ""
+
+#: controls/lib/alerts.py:754
+msgid "Unsupported Giraffe Configuration"
+msgstr ""
+
+#: controls/lib/alerts.py:755
+msgid "Visit comma.ai/tg"
+msgstr ""
+
+#: controls/lib/alerts.py:761
+msgid "Stock LKAS is turned on"
+msgstr ""
+
+#: controls/lib/alerts.py:762
+msgid "Turn off stock LKAS to engage"
+msgstr ""
+
+#: controls/lib/alerts.py:768
+msgid "Please connect to Internet"
+msgstr ""
+
+#: controls/lib/alerts.py:769
+msgid "An Update Check Is Required to Engage"
+msgstr ""
+
+#: controls/lib/alerts.py:775
+msgid "Community Feature Detected"
+msgstr ""
+
+#: controls/lib/alerts.py:776
+msgid "Enable Community Features in Developer Settings"
+msgstr ""
+
+#: controls/lib/alerts.py:783 controls/lib/alerts.py:790
+#: controls/lib/alerts.py:797
+msgid "Reboot your Device"
+msgstr ""
+
+#: controls/lib/alerts.py:796
+msgid "RAM Critically Low"
+msgstr ""
+
+#: controls/lib/alerts.py:803
+msgid "Dashcam Mode"
+msgstr ""
+
+#: controls/lib/alerts.py:804
+msgid "Car Unrecognized"
+msgstr ""
+
+#: controls/lib/alerts.py:811
+msgid "Please Check Hardware"
+msgstr ""
+
+#: controls/lib/alerts.py:817
+msgid "Vehicle Parameter Identification Failed"
+msgstr ""
+
+#: controls/lib/alerts.py:825
+msgid "Lane Departure Detected"
+msgstr ""
+
+#: controls/lib/alerts.py:832
+msgid "Left ALC will engage in 3 seconds"
+msgstr ""
+
+#: controls/lib/alerts.py:839
+msgid "Right ALC will engage in 3 seconds"
+msgstr ""
+
+#: controls/lib/alerts.py:853
+msgid "STEERING REQUIRED: Lane Keeping OFF"
+msgstr ""
+
+#: controls/lib/alerts.py:860
+msgid "STEERING REQUIRED: Blinkers ON"
+msgstr ""
+
+#: controls/lib/alerts.py:866
+msgid "Lead Car Is Moving"
+msgstr ""
+
+#: controls/lib/alerts.py:872
+msgid "Lead Car Detected"
+msgstr ""
