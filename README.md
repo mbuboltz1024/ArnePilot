@@ -2,10 +2,10 @@
 
 
 
-What is openpilot?
+What is moparpilot?
 ------
 
-[openpilot](http://github.com/commaai/openpilot) is an open source driver assistance system. Currently, openpilot performs the functions of Adaptive Cruise Control (ACC), Automated Lane Centering (ALC), Forward Collision Warning (FCW) and Lane Departure Warning (LDW) for a growing variety of supported [car makes, models and model years](#supported-cars). In addition, while openpilot is engaged, a camera based Driver Monitoring (DM) feature alerts distracted and asleep drivers.
+[moparpilot](http://github.com/mbuboltz1024/moparpilot) is an open source driver assistance system. Currently, openpilot performs the functions of Adaptive Cruise Control (ACC), Automated Lane Centering (ALC), Forward Collision Warning (FCW) and Lane Departure Warning (LDW) for a growing variety of supported [car makes, models and model years](#supported-cars). In addition, while openpilot is engaged, a camera based Driver Monitoring (DM) feature alerts distracted and asleep drivers.
 
 
 Integration with Stock Features
@@ -130,12 +130,12 @@ Many factors can impact the performance of openpilot DM, causing it to be unable
 * Right hand driving vehicles.
 * The driver facing camera is obstructed, covered, or damaged.
 
-The list above does not represent an exhaustive list of situations that may interfere with proper operation of openpilot components. A driver should not rely on openpilot DM to assess their level of attention.
+The list above does not represent an exhaustive list of situations that may interfere with proper operation of moparpilot components. A driver should not rely on openpilot DM to assess their level of attention.
 
-User Data and comma Account
+
+User Data and Account
 ------
-
-By default, openpilot uploads the driving data to our servers. You can also access your data by pairing with the comma connect app ([iOS](https://apps.apple.com/us/app/comma-connect/id1456551889), [Android](https://play.google.com/store/apps/details?id=ai.comma.connect&hl=en_US)). We use your data to train better models and improve moparpilot for everyone.
+By default, MoparPilot does not upload your driving data to our servers. You also can not access your data with the comma connect app. We are currently working on a solution so you can upload and access your drives.
 
 moparpilot is open source software: the user is free to disable data collection if they wish to do so.
 
@@ -143,6 +143,7 @@ moparpilot logs the road facing camera, CAN, GPS, IMU, magnetometer, thermal sen
 The driver facing camera is only logged if you explicitly opt-in in settings. The microphone is not recorded.
 
 By using moparpilot, you agree to [our Privacy Policy](https://my.comma.ai/privacy). You understand that use of this software or its related services will generate certain types of user data, which may be logged and stored at the sole discretion of comma. By accepting this agreement, you grant an irrevocable, perpetual, worldwide right to comma for the use of this data.
+
 
 Safety and Testing
 ----
@@ -163,9 +164,9 @@ Check out the tools directory in master: lots of tools you can use to replay dri
 Community and Contributing
 ------
 
-moparpilot is developed by [comma](https://comma.ai/) and by users like you. We welcome both pull requests and issues on [GitHub](http://github.com/commaai/openpilot). Bug fixes and new car ports are encouraged.
+moparpilot is developed by [comma](https://comma.ai/) and by users like you. We welcome both pull requests and issues on GitHub. Bug fixes and new car ports are encouraged.
 
-You can add support for your car by following guides we have written for [Brand](https://medium.com/@comma_ai/how-to-write-a-car-port-for-openpilot-7ce0785eda84) and [Model](https://medium.com/@comma_ai/openpilot-port-guide-for-toyota-models-e5467f4b5fe6) ports. Generally, a car with adaptive cruise control and lane keep assist is a good candidate. [Join our Discord](https://discord.comma.ai) to discuss car ports: most car makes have a dedicated channel.
+You can add support for your car by following guides we have written for [Brand](https://medium.com/@comma_ai/how-to-write-a-car-port-for-openpilot-7ce0785eda84) and [Model](https://medium.com/@comma_ai/openpilot-port-guide-for-toyota-models-e5467f4b5fe6) ports. Generally, a car with adaptive cruise control and lane keep assist is a good candidate. Join our Discord to discuss car ports: most car makes have a dedicated channel.
 
 
 Directory Structure
