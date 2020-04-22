@@ -57,6 +57,7 @@ Installation Instructions
 Install moparpilot on an EON or comma two by entering ``https://openpilot.comma.ai`` during the installer setup.
 
 Run this command over SSH using WorkBench:
+
 cd /data; rm -rf openpilot; git clone https://github.com/mbuboltz1024/MoparPilot.git openpilot; cd openpilot; git checkout testing; reboot
 
 Follow these [video instructions](https://youtu.be/3nlkomHathI) to properly mount the device on the windshield. Note: openpilot features an automatic pose calibration routine and openpilot performance should not be affected by small pitch and yaw misalignments caused by imprecise device mounting.
