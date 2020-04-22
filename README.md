@@ -47,10 +47,9 @@ Cars that are maintained on this fork without andrrocity's device
 | RAM       |                               | Adaptive Cruise   | Stock            | 0mph               | 39mph        |
 
 
-You MUST enable Community Features on the device for MoparPilot to work.
-Community Maintained Cars and Features are not verified by comma to meet our [safety model](SAFETY.md). Be extra cautious using them. They are only available after enabling the toggle in `Settings->Developer->Enable Community Features`.
+You MUST enable Community Features on the device for MoparPilot to work. Mopar vehicles are only available after enabling the toggle in `Settings->Developer->Enable Community Features`.
 
-To promote a car from community maintained, it must meet a few requirements. We must own one from the brand, we must sell the harness for it, has full ISO26262 in both panda and moparpilot, there must be a path forward for longitudinal control, it must have AEB still enabled, and it must support fingerprinting 2.0
+In order promote Mopar vehicles from community maintained, it must meet a few requirements. Comma AI must own one from the brand, they must sell the harness for it, has full ISO26262 in both panda and openpilot, there must be a path forward for longitudinal control, it must have AEB still enabled, and it must support fingerprinting 2.0
 
 Installation Instructions
 ------
@@ -152,10 +151,6 @@ Safety and Testing
 * panda has additional hardware in the loop [tests](https://github.com/commaai/panda/blob/master/Jenkinsfile).
 * We run the latest openpilot in a testing closet containing 10 EONs continuously replaying routes.
 
-Testing on PC
-------
-
-Check out the tools directory in master: lots of tools you can use to replay driving data, test and develop moparpilot from your pc.
 
 Community and Contributing
 ------
@@ -209,4 +204,4 @@ NO WARRANTY EXPRESSED OR IMPLIED.**
 
 ---
 
-<img src="https://d1qb2nb5cznatu.cloudfront.net/startups/i/1061157-bc7e9bf3b246ece7322e6ffe653f6af8-medium_jpg.jpg?buster=1458363130" width="75"></img> <img src="https://cdn-images-1.medium.com/max/1600/1*C87EjxGeMPrkTuVRVWVg4w.png" width="225"></img>
+<img src="https://cdn-images-1.medium.com/max/1600/1*C87EjxGeMPrkTuVRVWVg4w.png" width="225"></img>
