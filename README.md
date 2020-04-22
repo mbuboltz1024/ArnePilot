@@ -1,7 +1,3 @@
-[![](https://i.imgur.com/UelUjKAh.png)](#)
-
-
-
 What is moparpilot?
 ------
 
