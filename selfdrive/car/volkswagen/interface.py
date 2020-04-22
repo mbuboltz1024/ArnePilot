@@ -77,6 +77,7 @@ class CarInterface(CarInterfaceBase):
 
   # returns a car.CarState
   def update(self, c, can_strings):
+    self.dp_load_params('volkswagen')
     canMonoTimes = []
     buttonEvents = []
 

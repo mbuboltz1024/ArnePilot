@@ -1,4 +1,8 @@
+# This Python file uses the following encoding: utf-8
+# -*- coding: utf-8 -*-
 from cereal import car, log
+from selfdrive.common.i18n import alerts
+_ = alerts()
 
 # Priority
 class Priority:
@@ -75,438 +79,438 @@ ALERTS = [
 
   Alert(
       "fcw",
-      "BRAKE!",
-      "Risk of Collision",
+      _("BRAKE!"),
+      _("Risk of Collision"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.chimeWarningRepeat, 1., 2., 2.),
 
   Alert(
       "fcwStock",
-      "BRAKE!",
-      "Risk of Collision",
+      _("BRAKE!"),
+      _("Risk of Collision"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 1., 2., 2.),  # no EON chime for stock FCW
 
   Alert(
       "steerSaturated",
-      "TAKE CONTROL",
-      "Turn Exceeds Steering Limit",
+      _("TAKE CONTROL"),
+      _("Turn Exceeds Steering Limit"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
 
   Alert(
       "steerTempUnavailable",
-      "TAKE CONTROL",
-      "Steering Temporarily Unavailable",
+      _("TAKE CONTROL"),
+      _("Steering Temporarily Unavailable"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .4, 2., 3.),
 
   Alert(
       "steerTempUnavailableMute",
-      "TAKE CONTROL",
-      "Steering Temporarily Unavailable",
+      _("TAKE CONTROL"),
+      _("Steering Temporarily Unavailable"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .2, .2, .2),
 
   Alert(
       "preDriverDistracted",
-      "KEEP EYES ON ROAD: Driver Distracted",
+      _("KEEP EYES ON ROAD: Driver Distracted"),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
 
   Alert(
       "promptDriverDistracted",
-      "KEEP EYES ON ROAD",
-      "Driver Appears Distracted",
+      _("KEEP EYES ON ROAD"),
+      _("Driver Appears Distracted"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1),
 
   Alert(
       "driverDistracted",
-      "DISENGAGE IMMEDIATELY",
-      "Driver Was Distracted",
+      _("DISENGAGE IMMEDIATELY"),
+      _("Driver Was Distracted"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, .1, .1),
 
   Alert(
       "preDriverUnresponsive",
-      "TOUCH STEERING WHEEL: No Face Detected",
+      _("TOUCH STEERING WHEEL: No Face Detected"),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
 
   Alert(
       "promptDriverUnresponsive",
-      "TOUCH STEERING WHEEL",
-      "Driver Is Unresponsive",
+      _("TOUCH STEERING WHEEL"),
+      _("Driver Is Unresponsive"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1),
 
   Alert(
       "driverUnresponsive",
-      "DISENGAGE IMMEDIATELY",
-      "Driver Was Unresponsive",
+      _("DISENGAGE IMMEDIATELY"),
+      _("Driver Was Unresponsive"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, .1, .1),
 
   Alert(
       "driverMonitorLowAcc",
-      "CHECK DRIVER FACE VISIBILITY",
-      "Driver Monitor Model Output Uncertain",
+      _("CHECK DRIVER FACE VISIBILITY"),
+      _("Driver Monitor Model Output Uncertain"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .4, 0., 1.),
 
   Alert(
       "geofence",
-      "DISENGAGEMENT REQUIRED",
-      "Not in Geofenced Area",
+      _("DISENGAGEMENT REQUIRED"),
+      _("Not in Geofenced Area"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, .1, .1),
 
   Alert(
       "startup",
-      "Be ready to take over at any time",
-      "Always keep hands on wheel and eyes on road",
+      _("Be ready to take over at any time"),
+      _("Always keep hands on wheel and eyes on road"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
 
   Alert(
       "startupMaster",
-      "WARNING: This branch is not tested",
-      "Always keep hands on wheel and eyes on road",
+      _("WARNING: This branch is not tested"),
+      _("Always keep hands on wheel and eyes on road"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
 
   Alert(
       "startupNoControl",
-      "Dashcam mode",
-      "Always keep hands on wheel and eyes on road",
+      _("Dashcam mode"),
+      _("Always keep hands on wheel and eyes on road"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
 
   Alert(
       "startupNoCar",
-      "Dashcam mode for unsupported car",
-      "Always keep hands on wheel and eyes on road",
+      _("Dashcam mode for unsupported car"),
+      _("Always keep hands on wheel and eyes on road"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
 
   Alert(
       "ethicalDilemma",
-      "TAKE CONTROL IMMEDIATELY",
-      "Ethical Dilemma Detected",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Ethical Dilemma Detected"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 1., 3., 3.),
 
   Alert(
       "steerTempUnavailableNoEntry",
-      "openpilot Unavailable",
-      "Steering Temporarily Unavailable",
+      _("openpilot Unavailable"),
+      _("Steering Temporarily Unavailable"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 0., 3.),
 
   Alert(
       "manualRestart",
-      "TAKE CONTROL",
-      "Resume Driving Manually",
+      _("TAKE CONTROL"),
+      _("Resume Driving Manually"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "resumeRequired",
-      "STOPPED",
-      "Press Resume to Move",
+      _("STOPPED"),
+      _("Press Resume to Move"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "belowSteerSpeed",
-      "TAKE CONTROL",
-      "Steer Unavailable Below ",
+      _("TAKE CONTROL"),
+      _("Steer Unavailable Below "),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.none, 0., 0.4, .3),
 
   Alert(
       "debugAlert",
-      "DEBUG ALERT",
+      _("DEBUG ALERT"),
       "",
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .1, .1, .1),
   Alert(
       "preLaneChangeLeft",
-      "Steer Left to Start Lane Change",
-      "Monitor Other Vehicles",
+      _("Steer Left to Start Lane Change"),
+      _("Monitor Other Vehicles"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
 
   Alert(
       "preLaneChangeRight",
-      "Steer Right to Start Lane Change",
-      "Monitor Other Vehicles",
+      _("Steer Right to Start Lane Change"),
+      _("Monitor Other Vehicles"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
 
   Alert(
       "laneChange",
-      "Changing Lane",
-      "Monitor Other Vehicles",
+      _("Changing Lane"),
+      _("Monitor Other Vehicles"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1),
 
   Alert(
       "posenetInvalid",
-      "TAKE CONTROL",
-      "Vision Model Output Uncertain",
+      _("TAKE CONTROL"),
+      _("Vision Model Output Uncertain"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .4, 2., 3.),
 
   # Non-entry only alerts
   Alert(
       "wrongCarModeNoEntry",
-      "openpilot Unavailable",
-      "Main Switch Off",
+      _("openpilot Unavailable"),
+      _("Main Switch Off"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 0., 3.),
 
   Alert(
       "dataNeededNoEntry",
-      "openpilot Unavailable",
-      "Calibration Needs Data. Upload Drive, Try Again",
+      _("openpilot Unavailable"),
+      _("Calibration Needs Data. Upload Drive, Try Again"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 0., 3.),
 
   Alert(
       "outOfSpaceNoEntry",
-      "openpilot Unavailable",
-      "Out of Storage Space",
+      _("openpilot Unavailable"),
+      _("Out of Storage Space"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 0., 3.),
 
   Alert(
       "pedalPressedNoEntry",
-      "openpilot Unavailable",
-      "Pedal Pressed During Attempt",
+      _("openpilot Unavailable"),
+      _("Pedal Pressed During Attempt"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, "brakePressed", AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "speedTooLowNoEntry",
-      "openpilot Unavailable",
-      "Speed Too Low",
+      _("openpilot Unavailable"),
+      _("Speed Too Low"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "brakeHoldNoEntry",
-      "openpilot Unavailable",
-      "Brake Hold Active",
+      _("openpilot Unavailable"),
+      _("Brake Hold Active"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "parkBrakeNoEntry",
-      "openpilot Unavailable",
-      "Park Brake Engaged",
+      _("openpilot Unavailable"),
+      _("Park Brake Engaged"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "lowSpeedLockoutNoEntry",
-      "openpilot Unavailable",
-      "Cruise Fault: Restart the Car",
+      _("openpilot Unavailable"),
+      _("Cruise Fault: Restart the Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "lowBatteryNoEntry",
-      "openpilot Unavailable",
-      "Low Battery",
+      _("openpilot Unavailable"),
+      _("Low Battery"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "sensorDataInvalidNoEntry",
-      "openpilot Unavailable",
-      "No Data from Device Sensors",
+      _("openpilot Unavailable"),
+      _("No Data from Device Sensors"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "soundsUnavailableNoEntry",
-      "openpilot Unavailable",
-      "Speaker not found",
+      _("openpilot Unavailable"),
+      _("Speaker not found"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "tooDistractedNoEntry",
-      "openpilot Unavailable",
-      "Distraction Level Too High",
+      _("openpilot Unavailable"),
+      _("Distraction Level Too High"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   # Cancellation alerts causing soft disabling
   Alert(
       "overheat",
-      "TAKE CONTROL IMMEDIATELY",
-      "System Overheated",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("System Overheated"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "wrongGear",
-      "TAKE CONTROL IMMEDIATELY",
-      "Gear not D",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Gear not D"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "calibrationInvalid",
-      "TAKE CONTROL IMMEDIATELY",
-      "Calibration Invalid: Reposition Device and Recalibrate",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Calibration Invalid: Reposition Device and Recalibrate"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "calibrationIncomplete",
-      "TAKE CONTROL IMMEDIATELY",
-      "Calibration in Progress",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Calibration in Progress"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "doorOpen",
-      "TAKE CONTROL IMMEDIATELY",
-      "Door Open",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Door Open"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "seatbeltNotLatched",
-      "TAKE CONTROL IMMEDIATELY",
-      "Seatbelt Unlatched",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Seatbelt Unlatched"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "espDisabled",
-      "TAKE CONTROL IMMEDIATELY",
-      "ESP Off",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("ESP Off"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "lowBattery",
-      "TAKE CONTROL IMMEDIATELY",
-      "Low Battery",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Low Battery"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "commIssue",
-      "TAKE CONTROL IMMEDIATELY",
-      "Communication Issue between Processes",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Communication Issue between Processes"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "radarCommIssue",
-      "TAKE CONTROL IMMEDIATELY",
-      "Radar Communication Issue",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Radar Communication Issue"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "radarCanError",
-      "TAKE CONTROL IMMEDIATELY",
-      "Radar Error: Restart the Car",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Radar Error: Restart the Car"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   Alert(
       "radarFault",
-      "TAKE CONTROL IMMEDIATELY",
-      "Radar Error: Restart the Car",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Radar Error: Restart the Car"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
 
   Alert(
       "lowMemory",
-      "TAKE CONTROL IMMEDIATELY",
-      "Low Memory: Reboot Your Device",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Low Memory: Reboot Your Device"),
       AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, .1, 2., 2.),
 
   # Cancellation alerts causing immediate disabling
   Alert(
       "controlsFailed",
-      "TAKE CONTROL IMMEDIATELY",
-      "Controls Failed",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Controls Failed"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "controlsMismatch",
-      "TAKE CONTROL IMMEDIATELY",
-      "Controls Mismatch",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Controls Mismatch"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "canError",
-      "TAKE CONTROL IMMEDIATELY",
-      "CAN Error: Check Connections",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("CAN Error: Check Connections"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "steerUnavailable",
-      "TAKE CONTROL IMMEDIATELY",
-      "LKAS Fault: Restart the Car",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("LKAS Fault: Restart the Car"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "brakeUnavailable",
-      "TAKE CONTROL IMMEDIATELY",
-      "Cruise Fault: Restart the Car",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Cruise Fault: Restart the Car"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "gasUnavailable",
-      "TAKE CONTROL IMMEDIATELY",
-      "Gas Fault: Restart the Car",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Gas Fault: Restart the Car"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "reverseGear",
-      "TAKE CONTROL IMMEDIATELY",
-      "Reverse Gear",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Reverse Gear"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "cruiseDisabled",
-      "TAKE CONTROL IMMEDIATELY",
-      "Cruise Is Off",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Cruise Is Off"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "plannerError",
-      "TAKE CONTROL IMMEDIATELY",
-      "Planner Solution Error",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Planner Solution Error"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
   Alert(
       "relayMalfunction",
-      "TAKE CONTROL IMMEDIATELY",
-      "Harness Malfunction",
+      _("TAKE CONTROL IMMEDIATELY"),
+      _("Harness Malfunction"),
       AlertStatus.critical, AlertSize.full,
       Priority.HIGHEST, VisualAlert.steerRequired, AudibleAlert.chimeWarningRepeat, 2.2, 3., 4.),
 
@@ -514,311 +518,359 @@ ALERTS = [
   # not loud cancellations (user is in control)
   Alert(
       "noTarget",
-      "openpilot Canceled",
-      "No close lead car",
+      _("openpilot Canceled"),
+      _("No close lead car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.HIGH, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   Alert(
       "speedTooLow",
-      "openpilot Canceled",
-      "Speed too low",
+      _("openpilot Canceled"),
+      _("Speed too low"),
       AlertStatus.normal, AlertSize.mid,
       Priority.HIGH, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   Alert(
       "speedTooHigh",
-      "Speed Too High",
-      "Slow down to resume operation",
+      _("Speed Too High"),
+      _("Slow down to resume operation"),
       AlertStatus.normal, AlertSize.mid,
       Priority.HIGH, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   # Cancellation alerts causing non-entry
   Alert(
       "overheatNoEntry",
-      "openpilot Unavailable",
-      "System overheated",
+      _("openpilot Unavailable"),
+      _("System overheated"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "wrongGearNoEntry",
-      "openpilot Unavailable",
-      "Gear not D",
+      _("openpilot Unavailable"),
+      _("Gear not D"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "calibrationInvalidNoEntry",
-      "openpilot Unavailable",
-      "Calibration Invalid: Reposition Device & Recalibrate",
+      _("openpilot Unavailable"),
+      _("Calibration Invalid: Reposition Device & Recalibrate"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "calibrationIncompleteNoEntry",
-      "openpilot Unavailable",
-      "Calibration in Progress",
+      _("openpilot Unavailable"),
+      _("Calibration in Progress"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "doorOpenNoEntry",
-      "openpilot Unavailable",
-      "Door open",
+      _("openpilot Unavailable"),
+      _("Door open"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "seatbeltNotLatchedNoEntry",
-      "openpilot Unavailable",
-      "Seatbelt unlatched",
+      _("openpilot Unavailable"),
+      _("Seatbelt unlatched"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "espDisabledNoEntry",
-      "openpilot Unavailable",
-      "ESP Off",
+      _("openpilot Unavailable"),
+      _("ESP Off"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "geofenceNoEntry",
-      "openpilot Unavailable",
-      "Not in Geofenced Area",
+      _("openpilot Unavailable"),
+      _("Not in Geofenced Area"),
       AlertStatus.normal, AlertSize.mid,
       Priority.MID, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "radarCanErrorNoEntry",
-      "openpilot Unavailable",
-      "Radar Error: Restart the Car",
+      _("openpilot Unavailable"),
+      _("Radar Error: Restart the Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "radarFaultNoEntry",
-      "openpilot Unavailable",
-      "Radar Error: Restart the Car",
+      _("openpilot Unavailable"),
+      _("Radar Error: Restart the Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "posenetInvalidNoEntry",
-      "openpilot Unavailable",
-      "Vision Model Output Uncertain",
+      _("openpilot Unavailable"),
+      _("Vision Model Output Uncertain"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "controlsFailedNoEntry",
-      "openpilot Unavailable",
-      "Controls Failed",
+      _("openpilot Unavailable"),
+      _("Controls Failed"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "canErrorNoEntry",
-      "openpilot Unavailable",
-      "CAN Error: Check Connections",
+      _("openpilot Unavailable"),
+      _("CAN Error: Check Connections"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "steerUnavailableNoEntry",
-      "openpilot Unavailable",
-      "LKAS Fault: Restart the Car",
+      _("openpilot Unavailable"),
+      _("LKAS Fault: Restart the Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "brakeUnavailableNoEntry",
-      "openpilot Unavailable",
-      "Cruise Fault: Restart the Car",
+      _("openpilot Unavailable"),
+      _("Cruise Fault: Restart the Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "gasUnavailableNoEntry",
-      "openpilot Unavailable",
-      "Gas Error: Restart the Car",
+      _("openpilot Unavailable"),
+      _("Gas Error: Restart the Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "reverseGearNoEntry",
-      "openpilot Unavailable",
-      "Reverse Gear",
+      _("openpilot Unavailable"),
+      _("Reverse Gear"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "cruiseDisabledNoEntry",
-      "openpilot Unavailable",
-      "Cruise is Off",
+      _("openpilot Unavailable"),
+      _("Cruise is Off"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "noTargetNoEntry",
-      "openpilot Unavailable",
-      "No Close Lead Car",
+      _("openpilot Unavailable"),
+      _("No Close Lead Car"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "plannerErrorNoEntry",
-      "openpilot Unavailable",
-      "Planner Solution Error",
+      _("openpilot Unavailable"),
+      _("Planner Solution Error"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "commIssueNoEntry",
-      "openpilot Unavailable",
-      "Communication Issue between Processes",
+      _("openpilot Unavailable"),
+      _("Communication Issue between Processes"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   Alert(
       "radarCommIssueNoEntry",
-      "openpilot Unavailable",
-      "Radar Communication Issue",
+      _("openpilot Unavailable"),
+      _("Radar Communication Issue"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   Alert(
       "internetConnectivityNeededNoEntry",
-      "openpilot Unavailable",
-      "Please Connect to Internet",
+      _("openpilot Unavailable"),
+      _("Please Connect to Internet"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   Alert(
       "lowMemoryNoEntry",
-      "openpilot Unavailable",
-      "Low Memory: Reboot Your Device",
+      _("openpilot Unavailable"),
+      _("Low Memory: Reboot Your Device"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeDisengage, .4, 2., 3.),
 
   Alert(
       "speedTooHighNoEntry",
-      "Speed Too High",
-      "Slow down to engage",
+      _("Speed Too High"),
+      _("Slow down to engage"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   Alert(
       "relayMalfunctionNoEntry",
-      "openpilot Unavailable",
-      "Harness Malfunction",
+      _("openpilot Unavailable"),
+      _("Harness Malfunction"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
 
   # permanent alerts
   Alert(
       "steerUnavailablePermanent",
-      "LKAS Fault: Restart the car to engage",
+      _("LKAS Fault: Restart the car to engage"),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "brakeUnavailablePermanent",
-      "Cruise Fault: Restart the car to engage",
+      _("Cruise Fault: Restart the car to engage"),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "lowSpeedLockoutPermanent",
-      "Cruise Fault: Restart the car to engage",
+      _("Cruise Fault: Restart the car to engage"),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "calibrationIncompletePermanent",
-      "Calibration in Progress: ",
-      "Drive Above ",
+      _("Calibration in Progress: "),
+      _("Drive Above "),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWEST, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "invalidGiraffeToyotaPermanent",
-      "Unsupported Giraffe Configuration",
-      "Visit comma.ai/tg",
+      _("Unsupported Giraffe Configuration"),
+      _("Visit comma.ai/tg"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "invalidLkasSettingPermanent",
-      "Stock LKAS is turned on",
-      "Turn off stock LKAS to engage",
+      _("Stock LKAS is turned on"),
+      _("Turn off stock LKAS to engage"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "internetConnectivityNeededPermanent",
-      "Please connect to Internet",
-      "An Update Check Is Required to Engage",
+      _("Please connect to Internet"),
+      _("An Update Check Is Required to Engage"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "communityFeatureDisallowedPermanent",
-      "Community Feature Detected",
-      "Enable Community Features in Developer Settings",
+      _("Community Feature Detected"),
+      _("Enable Community Features in Developer Settings"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, 0., 0., .2),  # LOW priority to overcome Cruise Error
 
   Alert(
       "sensorDataInvalidPermanent",
-      "No Data from Device Sensors",
-      "Reboot your Device",
+      _("No Data from Device Sensors"),
+      _("Reboot your Device"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "soundsUnavailablePermanent",
-      "Speaker not found",
-      "Reboot your Device",
+      _("Speaker not found"),
+      _("Reboot your Device"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "lowMemoryPermanent",
-      "RAM Critically Low",
-      "Reboot your Device",
+      _("RAM Critically Low"),
+      _("Reboot your Device"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "carUnrecognizedPermanent",
-      "Dashcam Mode",
-      "Car Unrecognized",
+      _("Dashcam Mode"),
+      _("Car Unrecognized"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "relayMalfunctionPermanent",
-      "Harness Malfunction",
-      "Please Check Hardware",
+      _("Harness Malfunction"),
+      _("Please Check Hardware"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
 
   Alert(
       "vehicleModelInvalid",
-      "Vehicle Parameter Identification Failed",
+      _("Vehicle Parameter Identification Failed"),
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.LOWEST, VisualAlert.steerRequired, AudibleAlert.none, .0, .0, .1),
 
   Alert(
       "ldwPermanent",
-      "TAKE CONTROL",
-      "Lane Departure Detected",
+      _("TAKE CONTROL"),
+      _("Lane Departure Detected"),
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+
+  # dp
+  Alert(
+      "preLaneChangeLeftALC",
+      _("Left ALC will engage in 3 seconds"),
+      _("Monitor Other Vehicles"),
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1, alert_rate=0.75),
+
+  Alert(
+      "preLaneChangeRightALC",
+      _("Right ALC will engage in 3 seconds"),
+      _("Monitor Other Vehicles"),
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1, alert_rate=0.75),
+
+  Alert(
+      "laneChangeALC",
+      _("Changing Lane"),
+      _("Monitor Other Vehicles"),
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1),
+
+  Alert(
+      "manualSteeringRequired",
+      _("STEERING REQUIRED: Lane Keeping OFF"),
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+
+  Alert(
+      "manualSteeringRequiredBlinkersOn",
+      _("STEERING REQUIRED: Blinkers ON"),
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
+  Alert(
+      "leadCarMoving",
+      _("Lead Car Is Moving"),
+      "",
+      AlertStatus.userPrompt, AlertSize.small,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1),
+  Alert(
+      "leadCarDetected",
+      _("Lead Car Detected"),
+      "",
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .0, .1, .1, alert_rate=0.25),
 ]

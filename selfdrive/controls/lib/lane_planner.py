@@ -1,6 +1,10 @@
 from common.numpy_fast import interp
 import numpy as np
 from cereal import log
+from common.dp import get_last_modified
+from common.realtime import sec_since_boot
+from common.params import Params
+params = Params()
 
 CAMERA_OFFSET = 0.06  # m from center car to camera
 
@@ -65,6 +69,11 @@ class LanePlanner():
     self._path_pinv = compute_path_pinv()
     self.x_points = np.arange(50)
 
+    # dp
+    self.last_ts = 0.
+    self.last_modified = 0.
+    self.camera_offset = 0.06
+
   def parse_model(self, md):
     if len(md.leftLane.poly):
       self.l_poly = np.array(md.leftLane.poly)
@@ -82,9 +91,19 @@ class LanePlanner():
       self.r_lane_change_prob = md.meta.desireState[log.PathPlan.Desire.laneChangeRight - 1]
 
   def update_d_poly(self, v_ego):
+    ts = sec_since_boot()
+    if ts - self.last_ts >= 5.:
+      modified = get_last_modified()
+      if self.last_modified != modified:
+        try:
+          self.camera_offset = int(params.get("DragonCameraOffset", encoding='utf8')) * 0.01
+        except (TypeError, ValueError):
+          self.camera_offset = CAMERA_OFFSET
+      self.last_modified = modified
+      self.last_ts = ts
     # only offset left and right lane lines; offsetting p_poly does not make sense
-    self.l_poly[3] += CAMERA_OFFSET
-    self.r_poly[3] += CAMERA_OFFSET
+    self.l_poly[3] += self.camera_offset
+    self.r_poly[3] += self.camera_offset
 
     # Find current lanewidth
     self.lane_width_certainty += 0.05 * (self.l_prob * self.r_prob - self.lane_width_certainty)

@@ -85,6 +85,7 @@ void pigeon_init();
 void *pigeon_thread(void *crap);
 
 void *safety_setter_thread(void *s) {
+  #ifndef DragonBTG
   // diagnostic only is the default, needed for VIN query
   pthread_mutex_lock(&usb_lock);
   libusb_control_transfer(dev_handle, 0x40, 0xdc, (uint16_t)(cereal::CarParams::SafetyModel::ELM327), 0, NULL, 0, TIMEOUT);
@@ -111,6 +112,7 @@ void *safety_setter_thread(void *s) {
   pthread_mutex_lock(&usb_lock);
   libusb_control_transfer(dev_handle, 0x40, 0xdc, (uint16_t)(cereal::CarParams::SafetyModel::NO_OUTPUT), 0, NULL, 0, TIMEOUT);
   pthread_mutex_unlock(&usb_lock);
+  #endif
 
   char *value;
   size_t value_sz = 0;
@@ -132,6 +134,9 @@ void *safety_setter_thread(void *s) {
 
   capnp::FlatArrayMessageReader cmsg(amsg);
   cereal::CarParams::Reader car_params = cmsg.getRoot<cereal::CarParams>();
+
+  LOGW("setting unsafety mode");
+  libusb_control_transfer(dev_handle, 0x40, 0xdf, 9, 0, NULL, 0, TIMEOUT);
 
   int safety_model = int(car_params.getSafetyModel());
   auto safety_param = car_params.getSafetyParam();
@@ -397,13 +402,14 @@ void can_health(PubSocket *publisher) {
   }
 
   voltage_f = VOLTAGE_K * (health.voltage / 1000.0) + (1.0 - VOLTAGE_K) * voltage_f;  // LPF
-
+  #ifndef DragonBTG
   // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
   if (health.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
     pthread_mutex_lock(&usb_lock);
     libusb_control_transfer(dev_handle, 0x40, 0xdc, (uint16_t)(cereal::CarParams::SafetyModel::NO_OUTPUT), 0, NULL, 0, TIMEOUT);
     pthread_mutex_unlock(&usb_lock);
   }
+  #endif
 
   bool ignition = ((health.ignition_line != 0) || (health.ignition_can != 0));
 
@@ -447,12 +453,14 @@ void can_health(PubSocket *publisher) {
     libusb_control_transfer(dev_handle, 0xc0, 0xe7, 1, 0, NULL, 0, TIMEOUT);
     pthread_mutex_unlock(&usb_lock);
   }
+  #ifndef DragonBTG
   // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
   if (!ignition && (health.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
     pthread_mutex_lock(&usb_lock);
     libusb_control_transfer(dev_handle, 0x40, 0xdc, (uint16_t)(cereal::CarParams::SafetyModel::NO_OUTPUT), 0, NULL, 0, TIMEOUT);
     pthread_mutex_unlock(&usb_lock);
   }
+  #endif
 #endif
 
   // clear VIN, CarParams, and set new safety on car start
@@ -885,6 +893,11 @@ void *pigeon_thread(void *crap) {
     if (pigeon_needs_init) {
       pigeon_needs_init = false;
       pigeon_init();
+      #ifdef DragonBTG
+      pthread_mutex_lock(&usb_lock);
+      libusb_control_transfer(dev_handle, 0x40, 0xdc, 2, 100, NULL, 0, TIMEOUT);
+      pthread_mutex_unlock(&usb_lock);
+      #endif
     }
     int alen = 0;
     while (alen < 0xfc0) {
@@ -919,6 +932,9 @@ void *pigeon_thread(void *crap) {
 int main() {
   int err;
   LOGW("starting boardd");
+  #ifdef DragonBTG
+  LOGW("boardd is running in DragonBTG mode");
+  #endif
 
   // set process priority
   err = set_realtime_priority(4);

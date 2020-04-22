@@ -17,7 +17,11 @@ from selfdrive.swaglog import cloudlog
 import cereal.messaging as messaging
 from selfdrive.loggerd.config import get_available_percent
 from selfdrive.pandad import get_expected_signature
-from selfdrive.thermald.power_monitoring import PowerMonitoring, get_battery_capacity, get_battery_status, get_battery_current, get_battery_voltage, get_usb_present
+from selfdrive.thermald.power_monitoring import PowerMonitoring, get_battery_capacity, get_battery_status, get_battery_current, get_battery_voltage, get_usb_present, set_battery_charging, get_battery_charging
+from common.dp import get_last_modified
+import re
+import subprocess
+params = Params()
 
 FW_SIGNATURE = get_expected_signature()
 
@@ -113,10 +117,14 @@ def set_eon_fan(val):
 _TEMP_THRS_H = [50., 65., 80., 10000]
 # temp thresholds to control fan speed - low hysteresis
 _TEMP_THRS_L = [42.5, 57.5, 72.5, 10000]
-# fan speed options
-_FAN_SPEEDS = [0, 16384, 32768, 65535]
-# max fan speed only allowed if battery is hot
-_BAT_TEMP_THERSHOLD = 45.
+if params.get('DragonNoctuaMode', encoding='utf8') == "1":
+  _FAN_SPEEDS = [65535, 65535, 65535, 65535]
+  _BAT_TEMP_THERSHOLD = 0.
+else:
+  # fan speed options
+  _FAN_SPEEDS = [0, 16384, 32768, 65535]
+  # max fan speed only allowed if battery is hot
+  _BAT_TEMP_THERSHOLD = 45.
 
 
 def handle_fan_eon(max_cpu_temp, bat_temp, fan_speed, ignition):
@@ -184,11 +192,46 @@ def thermald_thread():
   handle_fan = None
   is_uno = False
 
-  params = Params()
   pm = PowerMonitoring()
   no_panda_cnt = 0
 
+  # dp
+  ts_last_ip = 0
+  ts_last_update_vars = 0
+  ts_last_charging_ctrl = None
+  dp_last_modified = None
+
+  ip_addr = '255.255.255.255'
+  dragon_charging_ctrl = False
+  dragon_charging_ctrl_prev = False
+  dragon_to_discharge = 70
+  dragon_to_charge = 60
+  dp_temp_monitor = True
+
   while 1:
+    # dp
+    ts = sec_since_boot()
+    # update variable status every 10 secs
+    if ts - ts_last_update_vars >= 10.:
+      modified = get_last_modified()
+      if dp_last_modified != modified:
+        dp_temp_monitor = True if params.get('DragonEnableTempMonitor', encoding='utf8') == "1" else False
+        if not is_uno:
+          dragon_charging_ctrl = True if params.get('DragonChargingCtrl', encoding='utf8') == "1" else False
+          if dragon_charging_ctrl:
+            try:
+              dragon_to_discharge = int(params.get('DragonCharging', encoding='utf8'))
+            except (TypeError, ValueError):
+              dragon_to_discharge = 70
+            try:
+              dragon_to_charge = int(params.get('DragonDisCharging', encoding='utf8'))
+            except (TypeError, ValueError):
+              dragon_to_charge = 60
+        else:
+          dragon_charging_ctrl = False
+        dp_last_modified = modified
+      ts_last_update_vars = ts
+
     health = messaging.recv_sock(health_sock, wait=True)
     location = messaging.recv_sock(location_sock)
     location = location.gpsLocation if location else None
@@ -251,6 +294,18 @@ def thermald_thread():
       msg.thermal.batteryPercent = 100
       msg.thermal.batteryStatus = "Charging"
 
+    # dp
+    # update ip every 10 seconds
+    ts = sec_since_boot()
+    if ts - ts_last_ip >= 10.:
+      try:
+        result = subprocess.check_output(["ifconfig", "wlan0"], encoding='utf8')  # pylint: disable=unexpected-keyword-arg
+        ip_addr = re.findall(r"inet addr:((\d+\.){3}\d+)", result)[0][0]
+      except:
+        ip_addr = 'N/A'
+      ts_last_ip = ts
+    msg.thermal.ipAddr = ip_addr
+
     current_filter.update(msg.thermal.batteryCurrent / 1e6)
 
     # TODO: add car battery voltage check
@@ -288,45 +343,45 @@ def thermald_thread():
       thermal_status = ThermalStatus.green
 
     # **** starting logic ****
-
+    time_valid = True
     # Check for last update time and display alerts if needed
-    now = datetime.datetime.utcnow()
-
-    # show invalid date/time alert
-    time_valid = now.year >= 2019
-    if time_valid and not time_valid_prev:
-      params.delete("Offroad_InvalidTime")
-    if not time_valid and time_valid_prev:
-      put_nonblocking("Offroad_InvalidTime", json.dumps(OFFROAD_ALERTS["Offroad_InvalidTime"]))
-    time_valid_prev = time_valid
-
-    # Show update prompt
-    try:
-      last_update = datetime.datetime.fromisoformat(params.get("LastUpdateTime", encoding='utf8'))
-    except (TypeError, ValueError):
-      last_update = now
-    dt = now - last_update
-
-    update_failed_count = params.get("UpdateFailedCount")
-    update_failed_count = 0 if update_failed_count is None else int(update_failed_count)
-
-    if dt.days > DAYS_NO_CONNECTIVITY_MAX and update_failed_count > 1:
-      if current_connectivity_alert != "expired":
-        current_connectivity_alert = "expired"
-        params.delete("Offroad_ConnectivityNeededPrompt")
-        put_nonblocking("Offroad_ConnectivityNeeded", json.dumps(OFFROAD_ALERTS["Offroad_ConnectivityNeeded"]))
-    elif dt.days > DAYS_NO_CONNECTIVITY_PROMPT:
-      remaining_time = str(max(DAYS_NO_CONNECTIVITY_MAX - dt.days, 0))
-      if current_connectivity_alert != "prompt" + remaining_time:
-        current_connectivity_alert = "prompt" + remaining_time
-        alert_connectivity_prompt = copy.copy(OFFROAD_ALERTS["Offroad_ConnectivityNeededPrompt"])
-        alert_connectivity_prompt["text"] += remaining_time + " days."
-        params.delete("Offroad_ConnectivityNeeded")
-        put_nonblocking("Offroad_ConnectivityNeededPrompt", json.dumps(alert_connectivity_prompt))
-    elif current_connectivity_alert is not None:
-      current_connectivity_alert = None
-      params.delete("Offroad_ConnectivityNeeded")
-      params.delete("Offroad_ConnectivityNeededPrompt")
+    # now = datetime.datetime.utcnow()
+    #
+    # # show invalid date/time alert
+    # time_valid = now.year >= 2019
+    # if time_valid and not time_valid_prev:
+    #   params.delete("Offroad_InvalidTime")
+    # if not time_valid and time_valid_prev:
+    #   put_nonblocking("Offroad_InvalidTime", json.dumps(OFFROAD_ALERTS["Offroad_InvalidTime"]))
+    # time_valid_prev = time_valid
+    #
+    # # Show update prompt
+    # try:
+    #   last_update = datetime.datetime.fromisoformat(params.get("LastUpdateTime", encoding='utf8'))
+    # except (TypeError, ValueError):
+    #   last_update = now
+    # dt = now - last_update
+    #
+    # update_failed_count = params.get("UpdateFailedCount")
+    # update_failed_count = 0 if update_failed_count is None else int(update_failed_count)
+    #
+    # if dt.days > DAYS_NO_CONNECTIVITY_MAX and update_failed_count > 1:
+    #   if current_connectivity_alert != "expired":
+    #     current_connectivity_alert = "expired"
+    #     params.delete("Offroad_ConnectivityNeededPrompt")
+    #     put_nonblocking("Offroad_ConnectivityNeeded", json.dumps(OFFROAD_ALERTS["Offroad_ConnectivityNeeded"]))
+    # elif dt.days > DAYS_NO_CONNECTIVITY_PROMPT:
+    #   remaining_time = str(max(DAYS_NO_CONNECTIVITY_MAX - dt.days, 0))
+    #   if current_connectivity_alert != "prompt" + remaining_time:
+    #     current_connectivity_alert = "prompt" + remaining_time
+    #     alert_connectivity_prompt = copy.copy(OFFROAD_ALERTS["Offroad_ConnectivityNeededPrompt"])
+    #     alert_connectivity_prompt["text"] += remaining_time + " days."
+    #     params.delete("Offroad_ConnectivityNeeded")
+    #     put_nonblocking("Offroad_ConnectivityNeededPrompt", json.dumps(alert_connectivity_prompt))
+    # elif current_connectivity_alert is not None:
+    #   current_connectivity_alert = None
+    #   params.delete("Offroad_ConnectivityNeeded")
+    #   params.delete("Offroad_ConnectivityNeededPrompt")
 
     do_uninstall = params.get("DoUninstall") == b"1"
     accepted_terms = params.get("HasAcceptedTerms") == terms_version
@@ -362,13 +417,14 @@ def thermald_thread():
 
     # if any CPU gets above 107 or the battery gets above 63, kill all processes
     # controls will warn with CPU above 95 or battery above 60
-    if thermal_status >= ThermalStatus.danger:
-      should_start = False
-      if thermal_status_prev < ThermalStatus.danger:
-        put_nonblocking("Offroad_TemperatureTooHigh", json.dumps(OFFROAD_ALERTS["Offroad_TemperatureTooHigh"]))
-    else:
-      if thermal_status_prev >= ThermalStatus.danger:
-        params.delete("Offroad_TemperatureTooHigh")
+    if dp_temp_monitor:
+      if thermal_status >= ThermalStatus.danger:
+        should_start = False
+        if thermal_status_prev < ThermalStatus.danger:
+          put_nonblocking("Offroad_TemperatureTooHigh", json.dumps(OFFROAD_ALERTS["Offroad_TemperatureTooHigh"]))
+      else:
+        if thermal_status_prev >= ThermalStatus.danger:
+          params.delete("Offroad_TemperatureTooHigh")
 
     if should_start:
       if not should_start_prev:
@@ -414,6 +470,19 @@ def thermald_thread():
     usb_power_prev = usb_power
     fw_version_match_prev = fw_version_match
     should_start_prev = should_start
+
+    if dragon_charging_ctrl != dragon_charging_ctrl_prev:
+      set_battery_charging(True)
+
+    if dragon_charging_ctrl:
+      if ts_last_charging_ctrl is None or ts - ts_last_charging_ctrl >= 60.:
+        if msg.thermal.batteryPercent >= dragon_to_discharge and get_battery_charging():
+          set_battery_charging(False)
+        elif msg.thermal.batteryPercent <= dragon_to_charge and not get_battery_charging():
+          set_battery_charging(True)
+        ts_last_charging_ctrl = ts
+
+      dragon_charging_ctrl_prev = dragon_charging_ctrl
 
     # report to server once per minute
     if (count % int(60. / DT_TRML)) == 0:

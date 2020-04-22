@@ -111,6 +111,9 @@ class DriverStatus():
     self.is_rhd_region = False
     self.is_rhd_region_checked = False
 
+    # dp
+    self.awareness_time = _AWARENESS_TIME
+
     self._set_timers(active_monitoring=True)
 
   def _set_timers(self, active_monitoring):
@@ -138,9 +141,9 @@ class DriverStatus():
         self.awareness_active = self.awareness
         self.awareness = self.awareness_passive
 
-      self.threshold_pre = _AWARENESS_PRE_TIME_TILL_TERMINAL / _AWARENESS_TIME
-      self.threshold_prompt = _AWARENESS_PROMPT_TIME_TILL_TERMINAL / _AWARENESS_TIME
-      self.step_change = DT_DMON / _AWARENESS_TIME
+      self.threshold_pre = _AWARENESS_PRE_TIME_TILL_TERMINAL / self.awareness_time
+      self.threshold_prompt = _AWARENESS_PROMPT_TIME_TILL_TERMINAL / self.awareness_time
+      self.step_change = DT_DMON / self.awareness_time
       self.active_monitoring_mode = False
 
   def _is_driver_distracted(self, pose, blink):

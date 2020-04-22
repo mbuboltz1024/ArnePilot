@@ -3,6 +3,10 @@ from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR
 from opendbc.can.packer import CANPacker
+from common.params import Params
+params = Params()
+from common.dp import get_last_modified
+from common.dp import common_controller_update, common_controller_ctrl
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
@@ -44,8 +48,24 @@ class CarController():
     self.last_resume_frame = 0
     self.last_lead_distance = 0
 
+    # dp
+    self.dragon_enable_steering_on_signal = False
+    self.dragon_lat_ctrl = True
+    self.dp_last_modified = None
+    self.lane_change_enabled = True
+
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, visual_alert,
              left_lane, right_lane, left_lane_depart, right_lane_depart):
+
+    # dp
+    if frame % 500 == 0:
+      modified = get_last_modified()
+      if self.dp_last_modified != modified:
+        self.dragon_lat_ctrl, \
+        self.lane_change_enabled, \
+        self.dragon_enable_steering_on_signal = common_controller_update(self.lane_change_enabled)
+        self.dp_last_modified = modified
+
     # Steering Torque
     new_steer = actuators.steer * SteerLimitParams.STEER_MAX
     apply_steer = apply_std_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorque, SteerLimitParams)
@@ -62,6 +82,14 @@ class CarController():
       apply_steer = 0
 
     self.apply_steer_last = apply_steer
+
+    # dp
+    lkas_active = common_controller_ctrl(enabled,
+                                         self.dragon_lat_ctrl,
+                                         self.dragon_enable_steering_on_signal,
+                                         CS.out.leftBlinker,
+                                         CS.out.rightBlinker,
+                                         lkas_active)
 
     sys_warning, sys_state, left_lane_warning, right_lane_warning =\
       process_hud_alert(enabled, self.car_fingerprint, visual_alert,

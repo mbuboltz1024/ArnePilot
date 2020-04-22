@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import math
 import numpy as np
-from common.params import Params
+from common.params import Params, put_nonblocking
 from common.numpy_fast import interp
 
 import cereal.messaging as messaging
@@ -13,6 +13,7 @@ from selfdrive.controls.lib.speed_smoother import speed_smoother
 from selfdrive.controls.lib.longcontrol import LongCtrlState, MIN_CAN_SPEED
 from selfdrive.controls.lib.fcw import FCWChecker
 from selfdrive.controls.lib.long_mpc import LongitudinalMpc
+from common.dp import get_last_modified
 
 MAX_SPEED = 255.0
 
@@ -39,23 +40,64 @@ _A_TOTAL_MAX_BP = [20., 40.]
 SPEED_PERCENTILE_IDX = 7
 
 
-def calc_cruise_accel_limits(v_ego, following):
-  a_cruise_min = interp(v_ego, _A_CRUISE_MIN_BP, _A_CRUISE_MIN_V)
+# dp
+# accel profile by @arne182
+_AP_CRUISE_MIN_V = [-2.0, -1.5, -1.0, -0.7, -0.5]
+_AP_CRUISE_MIN_V_ECO = [-1.0, -0.7, -0.6, -0.5, -0.3]
+_AP_CRUISE_MIN_V_SPORT = [-3.0, -2.6, -2.3, -2.0, -1.0]
+_AP_CRUISE_MIN_V_FOLLOWING = [-4.0, -4.0, -3.5, -2.5, -2.0]
+_AP_CRUISE_MIN_BP = [0.0, 5.0, 10.0, 20.0, 55.0]
 
-  if following:
-    a_cruise_max = interp(v_ego, _A_CRUISE_MAX_BP, _A_CRUISE_MAX_V_FOLLOWING)
+_AP_CRUISE_MAX_V = [2.0, 2.0, 1.5, .5, .3]
+_AP_CRUISE_MAX_V_ECO = [0.8, 0.9, 1.0, 0.4, 0.2]
+_AP_CRUISE_MAX_V_SPORT = [3.0, 3.5, 3.0, 2.0, 2.0]
+_AP_CRUISE_MAX_V_FOLLOWING = [1.6, 1.4, 1.4, .7, .3]
+_AP_CRUISE_MAX_BP = [0., 5., 10., 20., 55.]
+
+# Lookup table for turns
+_AP_TOTAL_MAX_V = [3.3, 3.0, 3.9]
+_AP_TOTAL_MAX_BP = [0., 25., 55.]
+
+AP_OFF = 0
+AP_ECO = 1
+AP_NORMAL = 2
+AP_SPORT = 3
+
+
+def calc_cruise_accel_limits(v_ego, following, accel_profile):
+  if accel_profile == AP_OFF:
+    a_cruise_min = interp(v_ego, _A_CRUISE_MIN_BP, _A_CRUISE_MIN_V)
+
+    if following:
+      a_cruise_max = interp(v_ego, _A_CRUISE_MAX_BP, _A_CRUISE_MAX_V_FOLLOWING)
+    else:
+      a_cruise_max = interp(v_ego, _A_CRUISE_MAX_BP, _A_CRUISE_MAX_V)
   else:
-    a_cruise_max = interp(v_ego, _A_CRUISE_MAX_BP, _A_CRUISE_MAX_V)
+    if following:
+      a_cruise_min = interp(v_ego, _AP_CRUISE_MIN_BP, _AP_CRUISE_MIN_V_FOLLOWING)
+      a_cruise_max = interp(v_ego, _AP_CRUISE_MAX_BP, _AP_CRUISE_MAX_V_FOLLOWING)
+    else:
+      if accel_profile == AP_ECO:
+        a_cruise_min = interp(v_ego, _AP_CRUISE_MIN_BP, _AP_CRUISE_MIN_V_ECO)
+        a_cruise_max = interp(v_ego, _AP_CRUISE_MAX_BP, _AP_CRUISE_MAX_V_ECO)
+      elif accel_profile == AP_SPORT:
+        a_cruise_min = interp(v_ego, _AP_CRUISE_MIN_BP, _AP_CRUISE_MIN_V_SPORT)
+        a_cruise_max = interp(v_ego, _AP_CRUISE_MAX_BP, _AP_CRUISE_MAX_V_SPORT)
+      else:
+        a_cruise_min = interp(v_ego, _AP_CRUISE_MIN_BP, _AP_CRUISE_MIN_V)
+        a_cruise_max = interp(v_ego, _AP_CRUISE_MAX_BP, _AP_CRUISE_MAX_V)
   return np.vstack([a_cruise_min, a_cruise_max])
 
 
-def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
+def limit_accel_in_turns(v_ego, angle_steers, a_target, CP, accel_profile):
   """
   This function returns a limited long acceleration allowed, depending on the existing lateral acceleration
   this should avoid accelerating when losing the target in turns
   """
-
-  a_total_max = interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
+  if accel_profile == AP_OFF:
+    a_total_max = interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
+  else:
+    a_total_max = interp(v_ego, _AP_TOTAL_MAX_BP, _AP_TOTAL_MAX_V)
   a_y = v_ego**2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
   a_x_allowed = math.sqrt(max(a_total_max**2 - a_y**2, 0.))
 
@@ -86,6 +128,14 @@ class Planner():
 
     self.params = Params()
     self.first_loop = True
+
+    # dp
+    self.dragon_slow_on_curve = True
+    self.dragon_alt_accel_profile = False
+    self.dragon_fast_accel = False
+    self.dragon_accel_profile = AP_OFF
+    self.last_ts = 0.
+    self.dp_last_modified = None
 
   def choose_solution(self, v_cruise_setpoint, enabled):
     if enabled:
@@ -119,6 +169,20 @@ class Planner():
     cur_time = sec_since_boot()
     v_ego = sm['carState'].vEgo
 
+    # dp
+    # update variable status every 5 secs
+    if cur_time - self.last_ts >= 5.:
+      modified = get_last_modified()
+      if self.dp_last_modified != modified:
+        self.dragon_slow_on_curve = False if self.params.get("DragonEnableSlowOnCurve", encoding='utf8') == "0" else True
+        try:
+          self.dragon_accel_profile = int(self.params.get("DragonAccelProfile", encoding='utf8').rstrip('\x00'))
+        except (TypeError, ValueError):
+          self.dragon_accel_profile = AP_OFF
+          put_nonblocking('DragonAccelProfile', AP_OFF)
+        self.dp_last_modified = modified
+      self.last_ts = cur_time
+
     long_control_state = sm['controlsState'].longControlState
     v_cruise_kph = sm['controlsState'].vCruise
     force_slow_decel = sm['controlsState'].forceDecel
@@ -130,7 +194,7 @@ class Planner():
     enabled = (long_control_state == LongCtrlState.pid) or (long_control_state == LongCtrlState.stopping)
     following = lead_1.status and lead_1.dRel < 45.0 and lead_1.vLeadK > v_ego and lead_1.aLeadK > 0.0
 
-    if len(sm['model'].path.poly):
+    if self.dragon_slow_on_curve and len(sm['model'].path.poly):
       path = list(sm['model'].path.poly)
 
       # Curvature of polynomial https://en.wikipedia.org/wiki/Curvature#Curvature_of_the_graph_of_a_function
@@ -150,9 +214,9 @@ class Planner():
 
     # Calculate speed for normal cruise control
     if enabled and not self.first_loop:
-      accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following)]
+      accel_limits = [float(x) for x in calc_cruise_accel_limits(v_ego, following, self.dragon_accel_profile)]
       jerk_limits = [min(-0.1, accel_limits[0]), max(0.1, accel_limits[1])]  # TODO: make a separate lookup for jerk tuning
-      accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP)
+      accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngle, accel_limits, self.CP, self.dragon_accel_profile)
 
       if force_slow_decel:
         # if required so, force a smooth deceleration

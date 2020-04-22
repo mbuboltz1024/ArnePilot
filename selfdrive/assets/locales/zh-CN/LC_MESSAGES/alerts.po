@@ -1,0 +1,486 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-04-23 17:17+1000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Rick Lan <ricklan@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: zh-CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: controls/lib/alerts.py:82 controls/lib/alerts.py:89
+msgid "BRAKE!"
+msgstr "刹车！"
+
+#: controls/lib/alerts.py:83 controls/lib/alerts.py:90
+msgid "Risk of Collision"
+msgstr "有碰撞的风险"
+
+#: controls/lib/alerts.py:96 controls/lib/alerts.py:103
+#: controls/lib/alerts.py:110 controls/lib/alerts.py:215
+#: controls/lib/alerts.py:229 controls/lib/alerts.py:263
+#: controls/lib/alerts.py:824
+msgid "TAKE CONTROL"
+msgstr "接管控制"
+
+#: controls/lib/alerts.py:97
+msgid "Turn Exceeds Steering Limit"
+msgstr "弯道超过横向操控限制"
+
+#: controls/lib/alerts.py:104 controls/lib/alerts.py:111
+#: controls/lib/alerts.py:209
+msgid "Steering Temporarily Unavailable"
+msgstr "横向控制暂时失效"
+
+#: controls/lib/alerts.py:117
+msgid "KEEP EYES ON ROAD: Driver Distracted"
+msgstr "注意路况：驾驶分心"
+
+#: controls/lib/alerts.py:124
+msgid "KEEP EYES ON ROAD"
+msgstr "注意路况"
+
+#: controls/lib/alerts.py:125
+msgid "Driver Appears Distracted"
+msgstr "驾驶分心"
+
+#: controls/lib/alerts.py:131 controls/lib/alerts.py:152
+msgid "DISENGAGE IMMEDIATELY"
+msgstr "立即解除"
+
+#: controls/lib/alerts.py:132
+msgid "Driver Was Distracted"
+msgstr "驾驶分心"
+
+#: controls/lib/alerts.py:138
+msgid "TOUCH STEERING WHEEL: No Face Detected"
+msgstr "请触碰方向盘：未侦测到驾驶面容"
+
+#: controls/lib/alerts.py:145
+msgid "TOUCH STEERING WHEEL"
+msgstr "请触碰方向盘"
+
+#: controls/lib/alerts.py:146
+msgid "Driver Is Unresponsive"
+msgstr "驾驶没有反应"
+
+#: controls/lib/alerts.py:153
+msgid "Driver Was Unresponsive"
+msgstr "驾驶没有反应"
+
+#: controls/lib/alerts.py:159
+msgid "CHECK DRIVER FACE VISIBILITY"
+msgstr "请检查驾驶面部的可见度"
+
+#: controls/lib/alerts.py:160
+msgid "Driver Monitor Model Output Uncertain"
+msgstr "驾驶监控模型判断不明确"
+
+#: controls/lib/alerts.py:166
+msgid "DISENGAGEMENT REQUIRED"
+msgstr "请马上解除"
+
+#: controls/lib/alerts.py:167 controls/lib/alerts.py:593
+msgid "Not in Geofenced Area"
+msgstr "不在地理围栏区域之内"
+
+#: controls/lib/alerts.py:173
+msgid "Be ready to take over at any time"
+msgstr "请准备好随时接管"
+
+#: controls/lib/alerts.py:174 controls/lib/alerts.py:181
+#: controls/lib/alerts.py:188 controls/lib/alerts.py:195
+msgid "Always keep hands on wheel and eyes on road"
+msgstr "将手放在方向盘上并持续监视路况"
+
+#: controls/lib/alerts.py:180
+msgid "WARNING: This branch is not tested"
+msgstr "注意：这个分支未经过测试"
+
+#: controls/lib/alerts.py:187
+msgid "Dashcam mode"
+msgstr "行车记录模式"
+
+#: controls/lib/alerts.py:194
+msgid "Dashcam mode for unsupported car"
+msgstr "行车记录模式 (尚未支援车种)"
+
+#: controls/lib/alerts.py:201 controls/lib/alerts.py:356
+#: controls/lib/alerts.py:363 controls/lib/alerts.py:370
+#: controls/lib/alerts.py:377 controls/lib/alerts.py:384
+#: controls/lib/alerts.py:391 controls/lib/alerts.py:398
+#: controls/lib/alerts.py:405 controls/lib/alerts.py:412
+#: controls/lib/alerts.py:419 controls/lib/alerts.py:426
+#: controls/lib/alerts.py:433 controls/lib/alerts.py:441
+#: controls/lib/alerts.py:449 controls/lib/alerts.py:456
+#: controls/lib/alerts.py:463 controls/lib/alerts.py:470
+#: controls/lib/alerts.py:477 controls/lib/alerts.py:484
+#: controls/lib/alerts.py:491 controls/lib/alerts.py:498
+#: controls/lib/alerts.py:505 controls/lib/alerts.py:512
+msgid "TAKE CONTROL IMMEDIATELY"
+msgstr "即刻接管控制"
+
+#: controls/lib/alerts.py:202
+msgid "Ethical Dilemma Detected"
+msgstr ""
+
+#: controls/lib/alerts.py:208 controls/lib/alerts.py:271
+#: controls/lib/alerts.py:278 controls/lib/alerts.py:285
+#: controls/lib/alerts.py:292 controls/lib/alerts.py:299
+#: controls/lib/alerts.py:306 controls/lib/alerts.py:313
+#: controls/lib/alerts.py:320 controls/lib/alerts.py:327
+#: controls/lib/alerts.py:334 controls/lib/alerts.py:341
+#: controls/lib/alerts.py:348 controls/lib/alerts.py:543
+#: controls/lib/alerts.py:550 controls/lib/alerts.py:557
+#: controls/lib/alerts.py:564 controls/lib/alerts.py:571
+#: controls/lib/alerts.py:578 controls/lib/alerts.py:585
+#: controls/lib/alerts.py:592 controls/lib/alerts.py:599
+#: controls/lib/alerts.py:606 controls/lib/alerts.py:613
+#: controls/lib/alerts.py:620 controls/lib/alerts.py:627
+#: controls/lib/alerts.py:634 controls/lib/alerts.py:641
+#: controls/lib/alerts.py:648 controls/lib/alerts.py:655
+#: controls/lib/alerts.py:662 controls/lib/alerts.py:669
+#: controls/lib/alerts.py:676 controls/lib/alerts.py:683
+#: controls/lib/alerts.py:690 controls/lib/alerts.py:697
+#: controls/lib/alerts.py:704 controls/lib/alerts.py:718
+msgid "openpilot Unavailable"
+msgstr "无法使用 openpilot"
+
+#: controls/lib/alerts.py:216
+msgid "Resume Driving Manually"
+msgstr "请自行恢復驾驶"
+
+#: controls/lib/alerts.py:222
+msgid "STOPPED"
+msgstr "已停止"
+
+#: controls/lib/alerts.py:223
+msgid "Press Resume to Move"
+msgstr "请按 RES 继续"
+
+#: controls/lib/alerts.py:230
+msgid "Steer Unavailable Below "
+msgstr "横向控制暂时失效，车速低于 "
+
+#: controls/lib/alerts.py:236
+msgid "DEBUG ALERT"
+msgstr "除错用警示讯息"
+
+#: controls/lib/alerts.py:242
+msgid "Steer Left to Start Lane Change"
+msgstr "请往左打方向盘切换至左车道"
+
+#: controls/lib/alerts.py:243 controls/lib/alerts.py:250
+#: controls/lib/alerts.py:257 controls/lib/alerts.py:833
+#: controls/lib/alerts.py:840 controls/lib/alerts.py:847
+msgid "Monitor Other Vehicles"
+msgstr "请注意其它车辆"
+
+#: controls/lib/alerts.py:249
+msgid "Steer Right to Start Lane Change"
+msgstr "请往右打方向盘切换至右车道"
+
+#: controls/lib/alerts.py:256 controls/lib/alerts.py:846
+msgid "Changing Lane"
+msgstr "切换车道中"
+
+#: controls/lib/alerts.py:264 controls/lib/alerts.py:614
+msgid "Vision Model Output Uncertain"
+msgstr "视觉模型判断不明确"
+
+#: controls/lib/alerts.py:272
+msgid "Main Switch Off"
+msgstr "主开关已关闭"
+
+#: controls/lib/alerts.py:279
+msgid "Calibration Needs Data. Upload Drive, Try Again"
+msgstr "校正需要数据，请上传您的行车数据后再重试一次"
+
+#: controls/lib/alerts.py:286
+msgid "Out of Storage Space"
+msgstr "存储空间不足"
+
+#: controls/lib/alerts.py:293
+msgid "Pedal Pressed During Attempt"
+msgstr "启用时侦测到驾驶踩踏油门/刹车"
+
+#: controls/lib/alerts.py:300
+msgid "Speed Too Low"
+msgstr "车速过慢"
+
+#: controls/lib/alerts.py:307
+msgid "Brake Hold Active"
+msgstr "驻车煞车已启用"
+
+#: controls/lib/alerts.py:314
+msgid "Park Brake Engaged"
+msgstr "电子驻车已启动"
+
+#: controls/lib/alerts.py:321 controls/lib/alerts.py:478
+#: controls/lib/alerts.py:642
+msgid "Cruise Fault: Restart the Car"
+msgstr "巡航系统错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:328 controls/lib/alerts.py:406
+msgid "Low Battery"
+msgstr "电量过低"
+
+#: controls/lib/alerts.py:335 controls/lib/alerts.py:782
+msgid "No Data from Device Sensors"
+msgstr "未收到装置传感器数据"
+
+#: controls/lib/alerts.py:342 controls/lib/alerts.py:789
+msgid "Speaker not found"
+msgstr "找不到音效装置"
+
+#: controls/lib/alerts.py:349
+msgid "Distraction Level Too High"
+msgstr "驾驶分心太多次"
+
+#: controls/lib/alerts.py:357
+msgid "System Overheated"
+msgstr "系统过热"
+
+#: controls/lib/alerts.py:364 controls/lib/alerts.py:551
+msgid "Gear not D"
+msgstr "不在 D 档位"
+
+#: controls/lib/alerts.py:371
+msgid "Calibration Invalid: Reposition Device and Recalibrate"
+msgstr "校准无效：请将装置放于新的位置并重新校准"
+
+#: controls/lib/alerts.py:378 controls/lib/alerts.py:565
+msgid "Calibration in Progress"
+msgstr "正在校准中"
+
+#: controls/lib/alerts.py:385
+msgid "Door Open"
+msgstr "车门开启"
+
+#: controls/lib/alerts.py:392
+msgid "Seatbelt Unlatched"
+msgstr "安全带未繫"
+
+#: controls/lib/alerts.py:399 controls/lib/alerts.py:586
+msgid "ESP Off"
+msgstr "ESP 关闭"
+
+#: controls/lib/alerts.py:413 controls/lib/alerts.py:684
+msgid "Communication Issue between Processes"
+msgstr "行程间出现通讯问题"
+
+#: controls/lib/alerts.py:420 controls/lib/alerts.py:691
+msgid "Radar Communication Issue"
+msgstr "雷达通讯出现问题"
+
+#: controls/lib/alerts.py:427 controls/lib/alerts.py:434
+#: controls/lib/alerts.py:600 controls/lib/alerts.py:607
+msgid "Radar Error: Restart the Car"
+msgstr "雷达讯号错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:442 controls/lib/alerts.py:705
+msgid "Low Memory: Reboot Your Device"
+msgstr "记忆体不足：请重启您的装置"
+
+#: controls/lib/alerts.py:450 controls/lib/alerts.py:621
+msgid "Controls Failed"
+msgstr "控制发生错误"
+
+#: controls/lib/alerts.py:457
+msgid "Controls Mismatch"
+msgstr "控制不匹配"
+
+#: controls/lib/alerts.py:464 controls/lib/alerts.py:628
+msgid "CAN Error: Check Connections"
+msgstr "CAN 讯号错误：请检查线路"
+
+#: controls/lib/alerts.py:471 controls/lib/alerts.py:635
+msgid "LKAS Fault: Restart the Car"
+msgstr "LKAS 错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:485
+msgid "Gas Fault: Restart the Car"
+msgstr "油门错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:492 controls/lib/alerts.py:656
+msgid "Reverse Gear"
+msgstr "切换至倒车档"
+
+#: controls/lib/alerts.py:499
+msgid "Cruise Is Off"
+msgstr "巡航系统关闭"
+
+#: controls/lib/alerts.py:506 controls/lib/alerts.py:677
+msgid "Planner Solution Error"
+msgstr "Planner Solution 错误"
+
+#: controls/lib/alerts.py:513 controls/lib/alerts.py:719
+#: controls/lib/alerts.py:810
+msgid "Harness Malfunction"
+msgstr "Harness 故障"
+
+#: controls/lib/alerts.py:521 controls/lib/alerts.py:528
+msgid "openpilot Canceled"
+msgstr "openpilot 已取消"
+
+#: controls/lib/alerts.py:522
+msgid "No close lead car"
+msgstr "前方没有车辆"
+
+#: controls/lib/alerts.py:529
+msgid "Speed too low"
+msgstr "车速过慢"
+
+#: controls/lib/alerts.py:535 controls/lib/alerts.py:711
+msgid "Speed Too High"
+msgstr "车速过快"
+
+#: controls/lib/alerts.py:536
+msgid "Slow down to resume operation"
+msgstr "请减速后再启用"
+
+#: controls/lib/alerts.py:544
+msgid "System overheated"
+msgstr "系统过热"
+
+#: controls/lib/alerts.py:558
+msgid "Calibration Invalid: Reposition Device & Recalibrate"
+msgstr "校准无效：请将装置放于新的位置并重新校准"
+
+#: controls/lib/alerts.py:572
+msgid "Door open"
+msgstr "车门未关"
+
+#: controls/lib/alerts.py:579
+msgid "Seatbelt unlatched"
+msgstr "安全带未繫"
+
+#: controls/lib/alerts.py:649
+msgid "Gas Error: Restart the Car"
+msgstr "油门错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:663
+msgid "Cruise is Off"
+msgstr "巡航系统关闭"
+
+#: controls/lib/alerts.py:670
+msgid "No Close Lead Car"
+msgstr "前方没有车辆"
+
+#: controls/lib/alerts.py:698
+msgid "Please Connect to Internet"
+msgstr "请连接网路"
+
+#: controls/lib/alerts.py:712
+msgid "Slow down to engage"
+msgstr "请减速后再启用"
+
+#: controls/lib/alerts.py:726
+msgid "LKAS Fault: Restart the car to engage"
+msgstr "LKAS 错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:733 controls/lib/alerts.py:740
+msgid "Cruise Fault: Restart the car to engage"
+msgstr "巡航系统错误：请重新发动车辆"
+
+#: controls/lib/alerts.py:747
+msgid "Calibration in Progress: "
+msgstr "正在校准相机中："
+
+#: controls/lib/alerts.py:748
+msgid "Drive Above "
+msgstr "车速请高于"
+
+#: controls/lib/alerts.py:754
+msgid "Unsupported Giraffe Configuration"
+msgstr "未支援的 Giraffe 设置"
+
+#: controls/lib/alerts.py:755
+msgid "Visit comma.ai/tg"
+msgstr "请查阅 comma.ai/tg"
+
+#: controls/lib/alerts.py:761
+msgid "Stock LKAS is turned on"
+msgstr "原厂 LKAS 已开启"
+
+#: controls/lib/alerts.py:762
+msgid "Turn off stock LKAS to engage"
+msgstr "需关闭原厂 LKAS 才能启用"
+
+#: controls/lib/alerts.py:768
+msgid "Please connect to Internet"
+msgstr "请连接网路"
+
+#: controls/lib/alerts.py:769
+msgid "An Update Check Is Required to Engage"
+msgstr "需检查更新后才能启用"
+
+#: controls/lib/alerts.py:775
+msgid "Community Feature Detected"
+msgstr "检测到社群开发功能"
+
+#: controls/lib/alerts.py:776
+msgid "Enable Community Features in Developer Settings"
+msgstr "请至开发人员设定裡启用社群开发功能"
+
+#: controls/lib/alerts.py:783 controls/lib/alerts.py:790
+#: controls/lib/alerts.py:797
+msgid "Reboot your Device"
+msgstr "请重启装置"
+
+#: controls/lib/alerts.py:796
+msgid "RAM Critically Low"
+msgstr "记忆体严重不足"
+
+#: controls/lib/alerts.py:803
+msgid "Dashcam Mode"
+msgstr "行车记录模式"
+
+#: controls/lib/alerts.py:804
+msgid "Car Unrecognized"
+msgstr "无法辨识车款"
+
+#: controls/lib/alerts.py:811
+msgid "Please Check Hardware"
+msgstr "请检查硬体"
+
+#: controls/lib/alerts.py:817
+msgid "Vehicle Parameter Identification Failed"
+msgstr "车子参数识别失败"
+
+#: controls/lib/alerts.py:825
+msgid "Lane Departure Detected"
+msgstr "偏离车道"
+
+#: controls/lib/alerts.py:832
+msgid "Left ALC will engage in 3 seconds"
+msgstr "准备自动切至左车道"
+
+#: controls/lib/alerts.py:839
+msgid "Right ALC will engage in 3 seconds"
+msgstr "准备自动切至右车道"
+
+#: controls/lib/alerts.py:853
+msgid "STEERING REQUIRED: Lane Keeping OFF"
+msgstr "请接管方向盘：车道维持关闭"
+
+#: controls/lib/alerts.py:860
+msgid "STEERING REQUIRED: Blinkers ON"
+msgstr "请接管方向盘：方向灯开启"
+
+#: controls/lib/alerts.py:866
+msgid "Lead Car Is Moving"
+msgstr "前方车辆车移动中"
+
+#: controls/lib/alerts.py:872
+msgid "Lead Car Detected"
+msgstr "侦测到前方车辆"

@@ -25,6 +25,8 @@ from selfdrive.controls.lib.alertmanager import AlertManager
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.controls.lib.planner import LON_MPC_STEP
 from selfdrive.locationd.calibration_helpers import Calibration, Filter
+# dp
+from common.dp import get_last_modified
 
 LANE_DEPARTURE_THRESHOLD = 0.1
 STEER_ANGLE_SATURATION_TIMEOUT = 1.0 / DT_CTRL
@@ -39,13 +41,14 @@ LaneChangeDirection = log.PathPlan.LaneChangeDirection
 
 
 def add_lane_change_event(events, path_plan):
+  postfix = 'ALC' if path_plan.alcAllowed else ''
   if path_plan.laneChangeState == LaneChangeState.preLaneChange:
     if path_plan.laneChangeDirection == LaneChangeDirection.left:
-      events.append(create_event('preLaneChangeLeft', [ET.WARNING]))
+      events.append(create_event(f"preLaneChangeLeft{postfix}", [ET.WARNING]))
     else:
-      events.append(create_event('preLaneChangeRight', [ET.WARNING]))
+      events.append(create_event(f"preLaneChangeRight{postfix}", [ET.WARNING]))
   elif path_plan.laneChangeState in [LaneChangeState.laneChangeStarting, LaneChangeState.laneChangeFinishing]:
-      events.append(create_event('laneChange', [ET.WARNING]))
+      events.append(create_event(f"laneChange{postfix}", [ET.WARNING]))
 
 
 def isActive(state):
@@ -69,7 +72,7 @@ def events_to_bytes(events):
   return ret
 
 
-def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params):
+def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params, dragon_toyota_stock_dsu):
   """Receive data from sockets and create events for battery, temperature and disk space"""
 
   # Update carstate from CAN and create events
@@ -126,11 +129,12 @@ def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter
   if not enabled:
     mismatch_counter = 0
 
-  controls_allowed = sm['health'].controlsAllowed
-  if not controls_allowed and enabled:
-    mismatch_counter += 1
-  if mismatch_counter >= 200:
-    events.append(create_event('controlsMismatch', [ET.IMMEDIATE_DISABLE]))
+  if not dragon_toyota_stock_dsu:
+    controls_allowed = sm['health'].controlsAllowed
+    if not controls_allowed and enabled:
+      mismatch_counter += 1
+    if mismatch_counter >= 200:
+      events.append(create_event('controlsMismatch', [ET.IMMEDIATE_DISABLE]))
 
   return CS, events, cal_perc, mismatch_counter, can_error_counter
 
@@ -223,7 +227,7 @@ def state_transition(frame, CS, CP, state, events, soft_disable_timer, v_cruise_
 
 
 def state_control(frame, rcv_frame, plan, path_plan, CS, CP, state, events, v_cruise_kph, v_cruise_kph_last,
-                  AM, rk, LaC, LoC, read_only, is_metric, cal_perc, last_blinker_frame, saturated_count):
+                  AM, rk, LaC, LoC, read_only, is_metric, cal_perc, last_blinker_frame, saturated_count, dragon_lat_control, dragon_display_steering_limit_alert, dragon_lead_car_moving_alert):
   """Given the state, this function returns an actuators packet"""
 
   actuators = car.CarControl.Actuators.new_message()
@@ -245,6 +249,11 @@ def state_control(frame, rcv_frame, plan, path_plan, CS, CP, state, events, v_cr
   # State specific actions
 
   if state in [State.preEnabled, State.disabled]:
+    if dragon_lead_car_moving_alert:
+      for e in get_events(events, [ET.WARNING]):
+        extra_text = ""
+        if e in ["leadCarDetected", "leadCarMoving"]:
+          AM.add(frame, e, enabled, extra_text_2=extra_text)
     LaC.reset()
     LoC.reset(v_pid=CS.vEgo)
 
@@ -266,7 +275,7 @@ def state_control(frame, rcv_frame, plan, path_plan, CS, CP, state, events, v_cr
   v_acc_sol = plan.vStart + dt * (a_acc_sol + plan.aStart) / 2.0
 
   # Gas/Brake PID loop
-  actuators.gas, actuators.brake = LoC.update(active, CS.vEgo, CS.brakePressed, CS.standstill, CS.cruiseState.standstill,
+  actuators.gas, actuators.brake = LoC.update(active, CS.vEgo, CS.gasPressed, CS.brakePressed, CS.standstill, CS.cruiseState.standstill,
                                               v_cruise_kph, v_acc_sol, plan.vTargetFuture, a_acc_sol, CP)
   # Steering PID loop and lateral MPC
   actuators.steer, actuators.steerAngle, lac_log = LaC.update(active, CS.vEgo, CS.steeringAngle, CS.steeringRate, CS.steeringTorqueEps, CS.steeringPressed, CS.steeringRateLimited, CP, path_plan)
@@ -277,14 +286,15 @@ def state_control(frame, rcv_frame, plan, path_plan, CS, CP, state, events, v_cr
 
   saturated_count = saturated_count + 1 if angle_control_saturated and not CS.steeringPressed and active else 0
 
-  # Send a "steering required alert" if saturation count has reached the limit
-  if (lac_log.saturated and not CS.steeringPressed) or (saturated_count > STEER_ANGLE_SATURATION_TIMEOUT):
-    # Check if we deviated from the path
-    left_deviation = actuators.steer > 0 and path_plan.dPoly[3] > 0.1
-    right_deviation = actuators.steer < 0 and path_plan.dPoly[3] < -0.1
+  if dragon_display_steering_limit_alert and dragon_lat_control:
+    # Send a "steering required alert" if saturation count has reached the limit
+    if (lac_log.saturated and not CS.steeringPressed) or (saturated_count > STEER_ANGLE_SATURATION_TIMEOUT):
+      # Check if we deviated from the path
+      left_deviation = actuators.steer > 0 and path_plan.dPoly[3] > 0.1
+      right_deviation = actuators.steer < 0 and path_plan.dPoly[3] < -0.1
 
-    if left_deviation or right_deviation:
-      AM.add(frame, "steerSaturated", enabled)
+      if left_deviation or right_deviation:
+        AM.add(frame, "steerSaturated", enabled)
 
   # Parse permanent warnings to display constantly
   for e in get_events(events, [ET.PERMANENT]):
@@ -302,7 +312,7 @@ def state_control(frame, rcv_frame, plan, path_plan, CS, CP, state, events, v_cr
 
 def data_send(sm, pm, CS, CI, CP, VM, state, events, actuators, v_cruise_kph, rk, AM,
               LaC, LoC, read_only, start_time, v_acc, a_acc, lac_log, events_prev,
-              last_blinker_frame, is_ldw_enabled, can_error_counter):
+              last_blinker_frame, is_ldw_enabled, can_error_counter, dp_camera_offset):
   """Send actuators and hud commands to the car, send controlsstate and MPC logging"""
 
   CC = car.CarControl.new_message()
@@ -336,8 +346,8 @@ def data_send(sm, pm, CS, CI, CP, VM, state, events, actuators, v_cruise_kph, rk
     l_lane_change_prob = md.meta.desirePrediction[log.PathPlan.Desire.laneChangeLeft - 1]
     r_lane_change_prob = md.meta.desirePrediction[log.PathPlan.Desire.laneChangeRight - 1]
 
-    l_lane_close = left_lane_visible and (sm['pathPlan'].lPoly[3] < (1.08 - CAMERA_OFFSET))
-    r_lane_close = right_lane_visible and (sm['pathPlan'].rPoly[3] > -(1.08 + CAMERA_OFFSET))
+    l_lane_close = left_lane_visible and (sm['pathPlan'].lPoly[3] < (1.08 - dp_camera_offset))
+    r_lane_close = right_lane_visible and (sm['pathPlan'].rPoly[3] > -(1.08 + dp_camera_offset))
 
     if ldw_allowed:
       CC.hudControl.leftLaneDepart = bool(l_lane_change_prob > LANE_DEPARTURE_THRESHOLD and l_lane_close)
@@ -535,12 +545,42 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
 
   prof = Profiler(False)  # off by default
 
+  # dp
+  ts_last_check = 0.
+  dragon_toyota_stock_dsu = False
+  dragon_lat_control = True
+  dragon_display_steering_limit_alert = True
+  dragon_stopped_has_lead_count = 0
+  dragon_lead_car_moving_alert = False
+  dp_last_modified = None
+  dp_camera_offset = CAMERA_OFFSET
+
   while True:
     start_time = sec_since_boot()
+
+    # dp
+    ts = start_time
+    if ts - ts_last_check >= 5.:
+      modified = get_last_modified()
+      if dp_last_modified != modified:
+        try:
+          dp_camera_offset = int(params.get("DragonCameraOffset", encoding='utf8')) * 0.01
+        except (TypeError, ValueError):
+          dp_camera_offset = CAMERA_OFFSET
+        dragon_toyota_stock_dsu = True if params.get("DragonToyotaStockDSU", encoding='utf8') == "1" else False
+        dragon_lat_control = False if params.get("DragonLatCtrl", encoding='utf8') == "0" else True
+        if dragon_lat_control:
+          dragon_display_steering_limit_alert = False if params.get("DragonDisplaySteeringLimitAlert", encoding='utf8') == "0" else True
+        else:
+          dragon_display_steering_limit_alert = False
+        dragon_lead_car_moving_alert = True if params.get("DragonEnableLeadCarMovingAlert", encoding='utf8') == "1" else False
+        dp_last_modified = modified
+      ts_last_check = ts
+
     prof.checkpoint("Ratekeeper", ignore=True)
 
     # Sample data and compute car events
-    CS, events, cal_perc, mismatch_counter, can_error_counter = data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params)
+    CS, events, cal_perc, mismatch_counter, can_error_counter = data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params, dragon_toyota_stock_dsu)
     prof.checkpoint("Sample")
 
     # Create alerts
@@ -561,7 +601,10 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
     if sm['plan'].radarCanError:
       events.append(create_event('radarCanError', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
     if not CS.canValid:
-      events.append(create_event('canError', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
+      if dragon_toyota_stock_dsu:
+        events.append(create_event('pcmDisable', [ET.USER_DISABLE]))
+      else:
+        events.append(create_event('canError', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
     if not sounds_available:
       events.append(create_event('soundsUnavailable', [ET.NO_ENTRY, ET.PERMANENT]))
     if internet_needed:
@@ -573,10 +616,30 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
     if log.HealthData.FaultType.relayMalfunction in sm['health'].faults:
       events.append(create_event('relayMalfunction', [ET.NO_ENTRY, ET.PERMANENT, ET.IMMEDIATE_DISABLE]))
 
+    if not dragon_toyota_stock_dsu:
+      # Only allow engagement with brake pressed when stopped behind another stopped car
+      if CS.brakePressed and sm['plan'].vTargetFuture >= STARTING_TARGET_SPEED and not CP.radarOffCan and CS.vEgo < 0.3:
+        events.append(create_event('noTarget', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
 
-    # Only allow engagement with brake pressed when stopped behind another stopped car
-    if CS.brakePressed and sm['plan'].vTargetFuture >= STARTING_TARGET_SPEED and not CP.radarOffCan and CS.vEgo < 0.3:
-      events.append(create_event('noTarget', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
+    # dp
+    if dragon_lead_car_moving_alert:
+      # when car has a lead and is standstill and lead is barely moving, we start counting
+      if not CP.radarOffCan and sm['plan'].hasLead and CS.vEgo <= 0.01 and 0.3 >= abs(sm['plan'].vTarget) >= 0:
+        dragon_stopped_has_lead_count += 1
+      else:
+        dragon_stopped_has_lead_count = 0
+
+      # when we detect lead car over 3 secs and the lead car is started moving, we are ready to send alerts
+      # once the condition is triggered, we want to keep the trigger
+      if dragon_stopped_has_lead_count >= 300:
+        if abs(sm['plan'].vTargetFuture) >= 0.1:
+          events.append(create_event('leadCarMoving', [ET.WARNING]))
+        else:
+          events.append(create_event('leadCarDetected', [ET.WARNING]))
+
+      # we remove alert once our car is moving
+      if CS.vEgo > 0.:
+        dragon_stopped_has_lead_count = 0
 
     if not read_only:
       # update control state
@@ -587,14 +650,14 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
     # Compute actuators (runs PID loops and lateral MPC)
     actuators, v_cruise_kph, v_acc, a_acc, lac_log, last_blinker_frame, saturated_count = \
       state_control(sm.frame, sm.rcv_frame, sm['plan'], sm['pathPlan'], CS, CP, state, events, v_cruise_kph, v_cruise_kph_last, AM, rk,
-                    LaC, LoC, read_only, is_metric, cal_perc, last_blinker_frame, saturated_count)
+                    LaC, LoC, read_only, is_metric, cal_perc, last_blinker_frame, saturated_count, dragon_lat_control, dragon_display_steering_limit_alert, dragon_lead_car_moving_alert)
 
     prof.checkpoint("State Control")
 
     # Publish data
     CC, events_prev = data_send(sm, pm, CS, CI, CP, VM, state, events, actuators, v_cruise_kph, rk, AM, LaC,
                                 LoC, read_only, start_time, v_acc, a_acc, lac_log, events_prev, last_blinker_frame,
-                                is_ldw_enabled, can_error_counter)
+                                is_ldw_enabled, can_error_counter, dp_camera_offset)
     prof.checkpoint("Sent")
 
     rk.monitor_time()

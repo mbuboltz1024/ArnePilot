@@ -95,6 +95,15 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     speedTooHigh @70;
     laneChangeBlocked @71;
     relayMalfunction @72;
+
+    # dp
+    preLaneChangeLeftALC @73;
+    preLaneChangeRightALC @74;
+    laneChangeALC @75;
+    manualSteeringRequired @76;
+    manualSteeringRequiredBlinkersOn @77;
+    leadCarMoving @78;
+    leadCarDetected @79;
   }
 }
 

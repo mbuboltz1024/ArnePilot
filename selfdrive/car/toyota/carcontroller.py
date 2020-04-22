@@ -5,13 +5,17 @@ from selfdrive.car.toyota.toyotacan import create_steer_command, create_ui_comma
                                            create_accel_command, create_acc_cancel_command, create_fcw_command
 from selfdrive.car.toyota.values import Ecu, CAR, STATIC_MSGS, SteerLimitParams
 from opendbc.can.packer import CANPacker
+from common.params import Params
+params = Params()
+from common.dp import get_last_modified
+from common.dp import common_controller_update, common_controller_ctrl
 
 VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 # Accel limits
 ACCEL_HYST_GAP = 0.02  # don't change accel command for small oscilalitons within this value
-ACCEL_MAX = 1.5  # 1.5 m/s2
-ACCEL_MIN = -3.0 # 3   m/s2
+ACCEL_MAX = 2.0  # 2.0 m/s2
+ACCEL_MIN = -3.5 # 3.5   m/s2
 ACCEL_SCALE = max(ACCEL_MAX, -ACCEL_MIN)
 
 def accel_hysteresis(accel, accel_steady, enabled):
@@ -46,8 +50,29 @@ class CarController():
 
     self.packer = CANPacker(dbc_name)
 
+    # dp
+    self.dragon_enable_steering_on_signal = False
+    self.dragon_lat_ctrl = True
+    self.dragon_lane_departure_warning = True
+    self.dragon_toyota_sng_mod = False
+    self.dp_last_modified = None
+    self.lane_change_enabled = True
+
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
              left_line, right_line, lead, left_lane_depart, right_lane_depart):
+
+    # dp
+    if frame % 500 == 0:
+      modified = get_last_modified()
+      if self.dp_last_modified != modified:
+        self.dragon_lane_departure_warning = False if params.get("DragonToyotaLaneDepartureWarning", encoding='utf8') == "0" else True
+        self.dragon_toyota_sng_mod = True if params.get("DragonToyotaSnGMod", encoding='utf8') == "1" else False
+
+        self.dragon_lat_ctrl, \
+        self.lane_change_enabled, \
+        self.dragon_enable_steering_on_signal = common_controller_update(self.lane_change_enabled)
+
+        self.dp_last_modified = modified
 
     # *** compute control surfaces ***
 
@@ -86,7 +111,7 @@ class CarController():
       pcm_cancel_cmd = 1
 
     # on entering standstill, send standstill request
-    if CS.out.standstill and not self.last_standstill:
+    if not self.dragon_toyota_sng_mod and CS.out.standstill and not self.last_standstill:
       self.standstill_req = True
     if CS.pcm_acc_status != 8:
       # pcm entered standstill or it's disabled
@@ -95,6 +120,14 @@ class CarController():
     self.last_steer = apply_steer
     self.last_accel = apply_accel
     self.last_standstill = CS.out.standstill
+
+    # dp
+    apply_steer_req = common_controller_ctrl(enabled,
+                                             self.dragon_lat_ctrl,
+                                             self.dragon_enable_steering_on_signal,
+                                             CS.out.leftBlinker,
+                                             CS.out.rightBlinker,
+                                             apply_steer_req)
 
     can_sends = []
 
@@ -112,7 +145,7 @@ class CarController():
       lead = lead or CS.out.vEgo < 12.    # at low speed we always assume the lead is present do ACC can be engaged
 
       # Lexus IS uses a different cancellation message
-      if pcm_cancel_cmd and CS.CP.carFingerprint == CAR.LEXUS_IS:
+      if pcm_cancel_cmd and CS.CP.carFingerprint in [CAR.LEXUS_IS, CAR.LEXUS_ISH, CAR.LEXUS_GSH]:
         can_sends.append(create_acc_cancel_command(self.packer))
       elif CS.CP.openpilotLongitudinalControl:
         can_sends.append(create_accel_command(self.packer, apply_accel, pcm_cancel_cmd, self.standstill_req, lead))
@@ -139,8 +172,16 @@ class CarController():
       # forcing the pcm to disengage causes a bad fault sound so play a good sound instead
       send_ui = True
 
+    # dp
+    if self.dragon_lane_departure_warning:
+      dragon_left_lane_depart = left_lane_depart
+      dragon_right_lane_depart = right_lane_depart
+    else:
+      dragon_left_lane_depart = False
+      dragon_right_lane_depart = False
+
     if (frame % 100 == 0 or send_ui) and Ecu.fwdCamera in self.fake_ecus:
-      can_sends.append(create_ui_command(self.packer, steer_alert, pcm_cancel_cmd, left_line, right_line, left_lane_depart, right_lane_depart))
+      can_sends.append(create_ui_command(self.packer, steer_alert, pcm_cancel_cmd, left_line, right_line, dragon_left_lane_depart, dragon_right_lane_depart))
 
     if frame % 100 == 0 and Ecu.dsu in self.fake_ecus:
       can_sends.append(create_fcw_command(self.packer, fcw_alert))
