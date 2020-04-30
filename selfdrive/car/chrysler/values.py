@@ -89,7 +89,7 @@ DBC = {
   CAR.PACIFICA_2017_HYBRID: dbc_dict(
     'chrysler_pacifica_2017_hybrid',  # 'pt'
     'chrysler_pacifica_2017_hybrid_private_fusion'),  # 'radar'
-    CAR.PACIFICA_2017: dbc_dict(  # Same DBC file works.
+  CAR.PACIFICA_2017: dbc_dict(  # Same DBC file works.
       'chrysler_pacifica_2017_hybrid',  # 'pt'
       'chrysler_pacifica_2017_hybrid_private_fusion'),  # 'radar'
   CAR.PACIFICA_2018: dbc_dict(  # Same DBC file works.
