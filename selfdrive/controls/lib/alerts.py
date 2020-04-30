@@ -89,7 +89,7 @@ ALERTS = [
       _("BRAKE!"),
       _("Risk of Collision"),
       AlertStatus.critical, AlertSize.full,
-      Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.none, 1., 2., 2.),  # no EON chime for stock FCW
+      Priority.HIGHEST, VisualAlert.fcw, AudibleAlert.chimeWarningRepeat, 1., 2., 2.),
 
   Alert(
       "steerSaturated",
