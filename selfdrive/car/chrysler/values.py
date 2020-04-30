@@ -27,7 +27,6 @@ class CAR:
   #CHRYSLER300_2020 = "CHRYSLER 300 2020"
 
 
-
 # Unique can messages:
 # Only the hybrids have 270: 8
 # Only the gas have 55: 8, 416: 7
