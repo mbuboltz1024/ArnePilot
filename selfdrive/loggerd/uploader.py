@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import os
 import re
-#import time
+import time
 import json
-#import random
+import random
 import ctypes
 import inspect
 import requests
@@ -12,12 +12,15 @@ import threading
 import subprocess
 
 from selfdrive.swaglog import cloudlog
-#from selfdrive.loggerd.config import ROOT
-from selfdrive.data_collection import gps_uploader
+from selfdrive.loggerd.config import ROOT
 
 from common import android
-#from common.params import Params
+from common.params import Params
 from common.api import Api
+from common.xattr import getxattr, setxattr
+
+UPLOAD_ATTR_NAME = 'user.upload'
+UPLOAD_ATTR_VALUE = b'1'
 
 fake_upload = os.getenv("FAKEUPLOAD") is not None
 
@@ -87,7 +90,7 @@ def is_on_hotspot():
     is_entune = result.startswith('10.0.2.')
 
     return (is_android or is_ios or is_entune)
-  except:
+  except Exception:
     return False
 
 class Uploader():
@@ -101,18 +104,8 @@ class Uploader():
     self.last_resp = None
     self.last_exc = None
 
-    self.immediate_priority = {"qlog.bz2": 0, "qcamera.ts": 1, "rlog.bz2": 2}
-    self.high_priority = {"fcamera.hevc": 0, "dcamera.hevc": 1}
-
-  def clean_dirs(self):
-    try:
-      for logname in os.listdir(self.root):
-        path = os.path.join(self.root, logname)
-        # remove empty directories
-        if not os.listdir(path):
-          os.rmdir(path)
-    except OSError:
-      cloudlog.exception("clean_dirs failed")
+    self.immediate_priority = {"qlog.bz2": 0, "qcamera.ts": 1}
+    self.high_priority = {"rlog.bz2": 0, "fcamera.hevc": 1, "dcamera.hevc": 2}
 
   def get_upload_sort(self, name):
     if name in self.immediate_priority:
@@ -136,6 +129,14 @@ class Uploader():
       for name in sorted(names, key=self.get_upload_sort):
         key = os.path.join(logname, name)
         fn = os.path.join(path, name)
+        # skip files already uploaded
+        try:
+          is_uploaded = getxattr(fn, UPLOAD_ATTR_NAME)
+        except OSError:
+          cloudlog.event("uploader_getxattr_failed", exc=self.last_exc, key=key, fn=fn)
+          is_uploaded = True # deleter could have deleted
+        if is_uploaded:
+          continue
 
         yield (name, key, fn)
 
@@ -162,6 +163,10 @@ class Uploader():
   def do_upload(self, key, fn):
     try:
       url_resp = self.api.get("v1.3/"+self.dongle_id+"/upload_url/", timeout=10, path=key, access_token=self.api.get_token())
+      if url_resp.status_code == 412:
+        self.last_resp = url_resp
+        return
+        
       url_resp_json = json.loads(url_resp.text)
       url = url_resp_json['url']
       headers = url_resp_json['headers']
@@ -203,86 +208,68 @@ class Uploader():
     cloudlog.info("checking %r with size %r", key, sz)
 
     if sz == 0:
-      # can't upload files of 0 size
-      os.unlink(fn) # delete the file
+      try:
+        # tag files of 0 size as uploaded
+        setxattr(fn, UPLOAD_ATTR_NAME, UPLOAD_ATTR_VALUE)
+      except OSError:
+        cloudlog.event("uploader_setxattr_failed", exc=self.last_exc, key=key, fn=fn, sz=sz)
       success = True
     else:
       cloudlog.info("uploading %r", fn)
       stat = self.normal_upload(key, fn)
-      if stat is not None and stat.status_code in (200, 201):
-        cloudlog.event("upload_success", key=key, fn=fn, sz=sz)
-
-        # delete the file
+      if stat is not None and stat.status_code in (200, 201, 412):
+        cloudlog.event("upload_success" if stat.status_code != 412 else "upload_ignored", key=key, fn=fn, sz=sz)
         try:
-          os.unlink(fn)
+          # tag file as uploaded
+          setxattr(fn, UPLOAD_ATTR_NAME, UPLOAD_ATTR_VALUE)
         except OSError:
-          cloudlog.event("delete_failed", stat=stat, exc=self.last_exc, key=key, fn=fn, sz=sz)
-
+          cloudlog.event("uploader_setxattr_failed", exc=self.last_exc, key=key, fn=fn, sz=sz)
         success = True
       else:
         cloudlog.event("upload_failed", stat=stat, exc=self.last_exc, key=key, fn=fn, sz=sz)
         success = False
-
-    self.clean_dirs()
 
     return success
 
 def uploader_fn(exit_event):
   cloudlog.info("uploader_fn")
 
-  #params = Params()
-  #dongle_id = params.get("DongleId").decode('utf8')
+  params = Params()
+  dongle_id = params.get("DongleId").decode('utf8')
 
-  #if dongle_id is None:
-  #  cloudlog.info("uploader missing dongle_id")
-  #  raise Exception("uploader can't start without dongle id")
+  if dongle_id is None:
+    cloudlog.info("uploader missing dongle_id")
+    raise Exception("uploader can't start without dongle id")
 
-  #uploader = Uploader(dongle_id, ROOT)
+  uploader = Uploader(dongle_id, ROOT)
 
-  #backoff = 0.1
-
-  try:
-    last_gps_size = os.path.getsize("/data/openpilot/selfdrive/data_collection/gps-data")
-  except:
-    last_gps_size = None
-
+  backoff = 0.1
   while True:
-    #allow_raw_upload = (params.get("IsUploadRawEnabled") != b"0")
+    allow_raw_upload = (params.get("IsUploadRawEnabled") != b"0")
     on_hotspot = is_on_hotspot()
     on_wifi = is_on_wifi()
     should_upload = on_wifi and not on_hotspot
-    if should_upload:
-      try:
-        if last_gps_size == os.path.getsize("/data/openpilot/selfdrive/data_collection/gps-data"):
-          gps_uploader.upload_data()
-      except:
-        pass
-    try:
-      last_gps_size = os.path.getsize("/data/openpilot/selfdrive/data_collection/gps-data")
-    except:
-      last_gps_size = None
+
     if exit_event.is_set():
       return
-    # Todo: setup own upload for traffic light analysis
-    #Don't try and upload to comma servers 
-    
-    #d = uploader.next_file_to_upload(with_raw=allow_raw_upload and should_upload)
-    #if d is None:
-    #  time.sleep(5)
-    #  continue
 
-    #key, fn = d
+    d = uploader.next_file_to_upload(with_raw=allow_raw_upload and should_upload)
+    if d is None:
+      time.sleep(5)
+      continue
 
-    #cloudlog.event("uploader_netcheck", is_on_hotspot=on_hotspot, is_on_wifi=on_wifi)
-    #cloudlog.info("to upload %r", d)
-    #success = uploader.upload(key, fn)
-    #if success:
-    #  backoff = 0.1
-    #else:
-    #  cloudlog.info("backoff %r", backoff)
-    #  time.sleep(backoff + random.uniform(0, backoff))
-    #  backoff = min(backoff*2, 120)
-    #cloudlog.info("upload done, success=%r", success)
+    key, fn = d
+
+    cloudlog.event("uploader_netcheck", is_on_hotspot=on_hotspot, is_on_wifi=on_wifi)
+    cloudlog.info("to upload %r", d)
+    success = uploader.upload(key, fn)
+    if success:
+      backoff = 0.1
+    else:
+      cloudlog.info("backoff %r", backoff)
+      time.sleep(backoff + random.uniform(0, backoff))
+      backoff = min(backoff*2, 120)
+    cloudlog.info("upload done, success=%r", success)
 
 def main():
   uploader_fn(threading.Event())

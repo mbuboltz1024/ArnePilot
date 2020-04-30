@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from cereal import car, arne182
+from cereal import car
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.drive_helpers import EventTypes as ET, create_event
 from selfdrive.car.chrysler.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINTS
@@ -18,6 +18,9 @@ class CarInterface(CarInterfaceBase):
     ret.carName = "chrysler"
     ret.safetyModel = car.CarParams.SafetyModel.chrysler
 
+    # Chrysler port is a community feature, since we don't own one to test
+    ret.communityFeature = True
+
     # Speed conversion:              20, 45 mph
     ret.wheelbase = 3.089  # in meters for Pacifica Hybrid 2017
     ret.steerRatio = 16.2 # Pacifica Hybrid 2017
@@ -29,7 +32,7 @@ class CarInterface(CarInterfaceBase):
     ret.steerRateCost = 0.7
     ret.steerLimitTimer = 0.4
 
-    if candidate in (CAR.JEEP_CHEROKEE_2017, CAR.JEEP_CHEROKEE_2018, CAR.JEEP_CHEROKEE_2019):
+    if candidate in (CAR.JEEP_CHEROKEE, CAR.JEEP_CHEROKEE_2019):
       ret.wheelbase = 2.91  # in meters
       ret.steerRatio = 12.7
       ret.steerActuatorDelay = 0.2  # in seconds
@@ -37,7 +40,7 @@ class CarInterface(CarInterfaceBase):
     ret.centerToFront = ret.wheelbase * 0.44
 
     ret.minSteerSpeed = 3.8  # m/s
-    if candidate in (CAR.PACIFICA_2019_HYBRID, CAR.JEEP_CHEROKEE_2019):
+    if candidate in (CAR.PACIFICA_2019_HYBRID, CAR.PACIFICA_2020, CAR.JEEP_CHEROKEE_2019):
       # TODO allow 2019 cars to steer down to 13 m/s if already engaged.
       ret.minSteerSpeed = 17.5  # m/s 17 on the way up, 13 on the way down once engaged.
 
@@ -55,12 +58,12 @@ class CarInterface(CarInterfaceBase):
 
   # returns a car.CarState
   def update(self, c, can_strings):
+    self.dp_load_params('chrysler')
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
 
     ret = self.CS.update(self.cp, self.cp_cam)
-    ret_arne182 = arne182.CarStateArne182.new_message()
 
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
 
@@ -71,28 +74,17 @@ class CarInterface(CarInterfaceBase):
     ret.buttonEvents = []
 
     # events
-    events, eventsArne182 = self.create_common_events(ret, extra_gears=[car.CarState.GearShifter.low], gas_resume_speed = 2.)
-
-    if ret.cruiseState.enabled and not self.cruise_enabled_prev:
-      events.append(create_event('pcmEnable', [ET.ENABLE]))
-    elif not ret.cruiseState.enabled:
-      events.append(create_event('pcmDisable', [ET.USER_DISABLE]))
+    events = self.create_common_events(ret, extra_gears=[car.CarState.GearShifter.low], gas_resume_speed=2.)
 
     if ret.vEgo < self.CP.minSteerSpeed:
       events.append(create_event('belowSteerSpeed', [ET.WARNING]))
 
     ret.events = events
-    ret_arne182.events = eventsArne182
-
-    self.gas_pressed_prev = ret.gasPressed
-    self.brake_pressed_prev = ret.brakePressed
-    self.cruise_enabled_prev = ret.cruiseState.enabled
 
     # copy back carState packet to CS
     self.CS.out = ret.as_reader()
-    
-    return self.CS.out, ret_arne182.as_reader()
 
+    return self.CS.out
 
   # pass in a car.CarControl
   # to be called @ 100hz

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
-from cereal import car, arne182
+from cereal import car
 from common.numpy_fast import clip, interp
 from common.realtime import DT_CTRL
 from selfdrive.swaglog import cloudlog
@@ -189,7 +189,6 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kiBP = [0., 35.]
       ret.longitudinalTuning.kiV = [0.54, 0.36]
 
-
     elif candidate in (CAR.ACCORD, CAR.ACCORD_15, CAR.ACCORDH):
       stop_and_go = True
       if not candidate == CAR.ACCORDH: # Hybrid uses same brake msg as hatch
@@ -372,9 +371,7 @@ class CarInterface(CarInterfaceBase):
 
     else:
       raise ValueError("unsupported car %s" % candidate)
-      
-    ret.longitudinalTuning.kpV = [0.325, 0.325, 0.325]  # braking tune from rav4h
-    ret.longitudinalTuning.kiV = [0.15, 0.10]
+
     ret.steerControlType = car.CarParams.SteerControlType.torque
 
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
@@ -407,11 +404,11 @@ class CarInterface(CarInterfaceBase):
 
   # returns a car.CarState
   def update(self, c, can_strings):
+    self.dp_load_params('honda')
     # ******************* do can recv *******************
     self.cp.update_strings(can_strings)
     self.cp_cam.update_strings(can_strings)
 
-    ret_arne182 = arne182.CarStateArne182.new_message()
     ret = self.CS.update(self.cp, self.cp_cam)
 
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
@@ -458,8 +455,7 @@ class CarInterface(CarInterfaceBase):
     ret.buttonEvents = buttonEvents
 
     # events
-    events, eventsArne182 = self.create_common_events(ret)
-
+    events = self.create_common_events(ret, pcm_enable=False)
     if self.CS.brake_error:
       events.append(create_event('brakeUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
     if self.CS.brake_hold and self.CS.CP.carFingerprint not in HONDA_BOSCH:
@@ -475,8 +471,6 @@ class CarInterface(CarInterfaceBase):
     if self.CP.enableCruise and not ret.cruiseState.enabled and (c.actuators.brake <= 0. or not self.CP.openpilotLongitudinalControl):
       # non loud alert if cruise disbales below 25mph as expected (+ a little margin)
       if ret.vEgo < self.CP.minEnableSpeed + 2.:
-        events.append(create_event('speedTooLow', [ET.IMMEDIATE_DISABLE]))
-      else:
         events.append(create_event("cruiseDisabled", [ET.IMMEDIATE_DISABLE]))
     if self.CS.CP.minEnableSpeed > 0 and ret.vEgo < 0.001:
       events.append(create_event('manualRestart', [ET.WARNING]))
@@ -508,15 +502,11 @@ class CarInterface(CarInterfaceBase):
         self.last_enable_sent = cur_time
     elif enable_pressed:
       events.append(create_event('buttonEnable', [ET.ENABLE]))
-    ret_arne182.events = eventsArne182
+
     ret.events = events
 
-    # update previous brake/gas pressed
-    self.gas_pressed_prev = ret.gasPressed
-    self.brake_pressed_prev = ret.brakePressed
-
     self.CS.out = ret.as_reader()
-    return self.CS.out, ret_arne182.as_reader()
+    return self.CS.out
 
   # pass in a car.CarControl
   # to be called @ 100hz

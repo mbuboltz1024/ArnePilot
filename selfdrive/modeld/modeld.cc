@@ -205,8 +205,8 @@ int main(int argc, char **argv) {
 
       double mt1 = 0, mt2 = 0;
       if (run_model_this_iter) {
-        float vec_desire[DESIRE_SIZE] = {0};
-        if (desire >= 0 && desire < DESIRE_SIZE) {
+        float vec_desire[DESIRE_LEN] = {0};
+        if (desire >= 0 && desire < DESIRE_LEN) {
           vec_desire[desire] = 1.0;
         }
 

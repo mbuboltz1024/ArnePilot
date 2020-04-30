@@ -26,7 +26,7 @@ def _get_libmpc(mpc_id):
     double t[21];
     double cost;
     } log_t;
- 
+
     void init(double ttcCost, double distanceCost, double accelerationCost, double jerkCost);
     void init_with_simulation(double v_ego, double x_l, double v_l, double a_l, double l);
     void change_tr(double ttcCost, double distanceCost, double accelerationCost, double jerkCost);

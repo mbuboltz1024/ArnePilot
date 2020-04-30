@@ -4,22 +4,13 @@ from common.realtime import DT_DMON
 from selfdrive.controls.lib.drive_helpers import create_event, EventTypes as ET
 from common.filter_simple import FirstOrderFilter
 from common.stat_live import RunningStatFilter
-from common.op_params import opParams
-from common.travis_checker import travis
 
-
-if not travis:
-  awareness_factor = opParams().get('awareness_factor', default=1.0)
-else:
-  awareness_factor = 1
-
-_AWARENESS_TIME = 70. * awareness_factor  # 1.6 minutes limit without user touching steering wheels make the car enter a terminal status
-_AWARENESS_PRE_TIME_TILL_TERMINAL = 15. * awareness_factor # a first alert is issued 25s before expiration
-_AWARENESS_PROMPT_TIME_TILL_TERMINAL = 6. * awareness_factor  # a second alert is issued 15s before start decelerating the car
-
-_DISTRACTED_TIME = 11. * awareness_factor
-_DISTRACTED_PRE_TIME_TILL_TERMINAL = 8. * awareness_factor
-_DISTRACTED_PROMPT_TIME_TILL_TERMINAL = 6. * awareness_factor
+_AWARENESS_TIME = 70.  # one minute limit without user touching steering wheels make the car enter a terminal status
+_AWARENESS_PRE_TIME_TILL_TERMINAL = 15.  # a first alert is issued 25s before expiration
+_AWARENESS_PROMPT_TIME_TILL_TERMINAL = 6.  # a second alert is issued 15s before start decelerating the car
+_DISTRACTED_TIME = 11.
+_DISTRACTED_PRE_TIME_TILL_TERMINAL = 8.
+_DISTRACTED_PROMPT_TIME_TILL_TERMINAL = 6.
 
 _FACE_THRESHOLD = 0.4
 _EYE_THRESHOLD = 0.6
@@ -40,8 +31,8 @@ _HI_STD_FALLBACK_TIME = 10 # fall back to wheel touch if model is uncertain for 
 _DISTRACTED_FILTER_TS = 0.25  # 0.6Hz
 
 _POSE_CALIB_MIN_SPEED = 13 # 30 mph
-_POSE_OFFSET_MIN_COUNT = 60 # valid data counts before calibration completes, 1 seg is 600 counts
-_POSE_OFFSET_MAX_COUNT = 360 # stop deweighting new data after 6 min, aka "short term memory"
+_POSE_OFFSET_MIN_COUNT = 600 # valid data counts before calibration completes, 1 seg is 600 counts
+_POSE_OFFSET_MAX_COUNT = 3600 # stop deweighting new data after 6 min, aka "short term memory"
 
 _RECOVERY_FACTOR_MAX = 5. # relative to minus step change
 _RECOVERY_FACTOR_MIN = 1.25 # relative to minus step change
@@ -58,7 +49,7 @@ class DistractedType():
   BAD_POSE = 1
   BAD_BLINK = 2
 
-def face_orientation_from_net(angles_desc, pos_desc, rpy_calib):
+def face_orientation_from_net(angles_desc, pos_desc, rpy_calib, is_rhd):
   # the output of these angles are in device frame
   # so from driver's perspective, pitch is up and yaw is right
 
@@ -76,7 +67,7 @@ def face_orientation_from_net(angles_desc, pos_desc, rpy_calib):
 
   # no calib for roll
   pitch -= rpy_calib[1]
-  yaw -= rpy_calib[2]
+  yaw -= rpy_calib[2] * (1 - 2 * int(is_rhd)) # lhd -> -=, rhd -> +=
   return roll, pitch, yaw
 
 class DriverPose():
@@ -120,6 +111,9 @@ class DriverStatus():
     self.is_rhd_region = False
     self.is_rhd_region_checked = False
 
+    # dp
+    self.awareness_time = _AWARENESS_TIME
+
     self._set_timers(active_monitoring=True)
 
   def _set_timers(self, active_monitoring):
@@ -147,9 +141,9 @@ class DriverStatus():
         self.awareness_active = self.awareness
         self.awareness = self.awareness_passive
 
-      self.threshold_pre = _AWARENESS_PRE_TIME_TILL_TERMINAL / _AWARENESS_TIME
-      self.threshold_prompt = _AWARENESS_PROMPT_TIME_TILL_TERMINAL / _AWARENESS_TIME
-      self.step_change = DT_DMON / _AWARENESS_TIME
+      self.threshold_pre = _AWARENESS_PRE_TIME_TILL_TERMINAL / self.awareness_time
+      self.threshold_prompt = _AWARENESS_PROMPT_TIME_TILL_TERMINAL / self.awareness_time
+      self.step_change = DT_DMON / self.awareness_time
       self.active_monitoring_mode = False
 
   def _is_driver_distracted(self, pose, blink):
@@ -183,7 +177,7 @@ class DriverStatus():
     if len(driver_state.faceOrientation) == 0 or len(driver_state.facePosition) == 0 or len(driver_state.faceOrientationStd) == 0 or len(driver_state.facePositionStd) == 0:
       return
 
-    self.pose.roll, self.pose.pitch, self.pose.yaw = face_orientation_from_net(driver_state.faceOrientation, driver_state.facePosition, cal_rpy)
+    self.pose.roll, self.pose.pitch, self.pose.yaw = face_orientation_from_net(driver_state.faceOrientation, driver_state.facePosition, cal_rpy, self.is_rhd_region)
     self.pose.pitch_std = driver_state.faceOrientationStd[0]
     self.pose.yaw_std = driver_state.faceOrientationStd[1]
     # self.pose.roll_std = driver_state.faceOrientationStd[2]
@@ -192,8 +186,7 @@ class DriverStatus():
     self.blink.left_blink = driver_state.leftBlinkProb * (driver_state.leftEyeProb>_EYE_THRESHOLD)
     self.blink.right_blink = driver_state.rightBlinkProb * (driver_state.rightEyeProb>_EYE_THRESHOLD)
     self.face_detected = driver_state.faceProb > _FACE_THRESHOLD and \
-                          abs(driver_state.facePosition[0]) <= 0.4 and abs(driver_state.facePosition[1]) <= 0.45 and \
-                          not self.is_rhd_region
+                          abs(driver_state.facePosition[0]) <= 0.4 and abs(driver_state.facePosition[1]) <= 0.45
 
     self.driver_distracted = self._is_driver_distracted(self.pose, self.blink) > 0
     # first order filters

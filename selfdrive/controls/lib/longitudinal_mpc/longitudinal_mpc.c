@@ -87,7 +87,6 @@ void change_tr(double ttcCost, double distanceCost, double accelerationCost, dou
   acadoVariables.WN[8] = accelerationCost * STEP_MULTIPLIER; // acceleration
 }
 
-
 void init_with_simulation(double v_ego, double x_l_0, double v_l_0, double a_l_0, double l){
   int i;
 

@@ -76,28 +76,11 @@ carEvents: [8070, true, 1., 1]
 carParams: [8071, true, 0.02, 1]
 frontFrame: [8072, true, 10.]
 dMonitoringState: [8073, true, 5., 1]
+offroadLayout: [8074, false, 0.]
 
 testModel: [8040, false, 0.]
 testLiveLocation: [8045, false, 0.]
 testJoystick: [8056, false, 0.]
-
-#arne182
-liveTrafficData: [8208, false, 100.]
-arne182Status: [8209, false, 100.]
-latControl: [8210, false, 20.]
-phantomData: [8211, false, 20.]
-thermalonline: [8212, false, 1., 1]
-ipAddress: [8213, false, 0.]
-
-#alca Events
-alcaStatus: [8214, false, 0.]
-alcaState: [8215, false, 0.]
-
-# smiskolData
-smiskolData: [8216, false, 20.]
-dynamicFollowButton: [8217, false, 0.]
-trafficModelEvent: [8218, false, 5.]
-trafficModelRaw: [8219, false, 5.]
 
 # 8080 is reserved for slave testing daemon
 # 8762 is reserved for logserver
@@ -121,18 +104,30 @@ trafficModelRaw: [8219, false, 5.]
 # gpsd -- publishes EON's gps
 #   publishes: gpsNMEA
 
-# visiond -- talks to the cameras, runs the model, saves the videos
-#   publishes:  frame, model, driverMonitoring, cameraOdometry, thumbnail
+# camerad -- publishes camera frames
+#   publishes: frame, frontFrame, thumbnail
+#   subscribes: driverState
+
+# dmonitoringmodeld -- runs face detection on camera frames
+#   publishes: driverState
 
 # **** stateful data transformers ****
+
+# modeld -- runs & publishes the model 
+#   publishes: model, cameraOdometry
+#   subscribes: liveCalibration, pathPlan
 
 # plannerd -- decides where to drive the car
 #   subscribes: carState, model, radarState, controlsState, liveParameters
 #   publishes:  plan, pathPlan, liveMpc, liveLongitudinalMpc
 
 # controlsd -- drives the car by sending CAN messages to panda
-#   subscribes: can, thermal, health, plan, pathPlan, driverMonitoring, liveCalibration
+#   subscribes: can, thermal, health, plan, pathPlan, dMonitoringState, liveCalibration, model
 #   publishes:  carState, carControl, sendcan, controlsState, carEvents, carParams
+
+# dmonitoringd -- processes driver monitoring data and publishes driver awareness
+#   subscribes: driverState, liveCalibration, carState, model, gpsLocation
+#   publishes: dMonitoringState
 
 # radard -- processes the radar and vision data
 #   subscribes: can, controlsState, model, liveParameters

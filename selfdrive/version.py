@@ -2,14 +2,9 @@
 import os
 import subprocess
 from selfdrive.swaglog import cloudlog
-from common.op_params import opParams
-from common.travis_checker import travis
 
-cloak = opParams().get('cloak', True) if not travis else True
 
 def get_git_commit(default=None):
-  if cloak:
-    return "88307772daf8735f42f0585fbe91c3986e76b39d"
   try:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], encoding='utf8').strip()
   except subprocess.CalledProcessError:
@@ -17,8 +12,6 @@ def get_git_commit(default=None):
 
 
 def get_git_branch(default=None):
-  if cloak:
-    return "release2"
   try:
     return subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], encoding='utf8').strip()
   except subprocess.CalledProcessError:
@@ -26,8 +19,6 @@ def get_git_branch(default=None):
 
 
 def get_git_full_branchname(default=None):
-  if cloak:
-    return "origin/release2"
   try:
     return subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], encoding='utf8').strip()
   except subprocess.CalledProcessError:
@@ -35,8 +26,6 @@ def get_git_full_branchname(default=None):
 
 
 def get_git_remote(default=None):
-  if cloak:
-    return "https://github.com/commaai/openpilot.git"
   try:
     local_branch = subprocess.check_output(["git", "name-rev", "--name-only", "HEAD"], encoding='utf8').strip()
     tracking_remote = subprocess.check_output(["git", "config", "branch." + local_branch + ".remote"], encoding='utf8').strip()
@@ -68,17 +57,15 @@ try:
     pass
 
   if (origin is not None) and (branch is not None):
-    if cloak:
-      comma_remote = origin.startswith('git@github.com:commaai') or origin.startswith('https://github.com/commaai')
-    else:
-      comma_remote = origin.startswith('git@github.com:arne182') or origin.startswith('https://github.com/arne182')
+    comma_remote = origin.startswith('git@github.com:commaai') or origin.startswith('https://github.com/commaai')
 
     dirty = not comma_remote
-    if not cloak:
-      dirty = dirty or (subprocess.call(["git", "diff-index", "--quiet", branch, "--"]) != 0)
+    dirty = dirty or ('master' in branch)
+    dirty = dirty or (subprocess.call(["git", "diff-index", "--quiet", branch, "--"]) != 0)
 
     if dirty:
-      dirty_files = subprocess.check_output(["git", "diff-index", branch, "--"], encoding='utf8')
+      #dirty_files = subprocess.check_output(["git", "diff-index", branch, "--"], encoding='utf8')
+      dirty_files = ""
       commit = subprocess.check_output(["git", "rev-parse", "--verify", "HEAD"], encoding='utf8').rstrip()
       origin_commit = subprocess.check_output(["git", "rev-parse", "--verify", branch], encoding='utf8').rstrip()
       cloudlog.event("dirty comma branch", version=version, dirty=dirty, origin=origin, branch=branch, dirty_files=dirty_files, commit=commit, origin_commit=origin_commit)

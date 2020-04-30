@@ -1,5 +1,6 @@
 import copy
 from cereal import car
+from opendbc.can.can_define import CANDefine
 from selfdrive.config import Conversions as CV
 from selfdrive.car.interfaces import CarStateBase
 from opendbc.can.parser import CANParser
@@ -11,6 +12,8 @@ class CarState(CarStateBase):
     super().__init__(CP)
     self.left_blinker_cnt = 0
     self.right_blinker_cnt = 0
+    can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
+    self.shifter_values = can_define.dv["Transmission"]['Gear']
 
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
@@ -35,6 +38,9 @@ class CarState(CarStateBase):
     self.right_blinker_cnt = 50 if cp.vl["Dashlights"]['RIGHT_BLINKER'] else max(self.right_blinker_cnt - 1, 0)
     ret.rightBlinker = self.right_blinker_cnt > 0
 
+    can_gear = int(cp.vl["Transmission"]['Gear'])
+    ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(can_gear, None))
+
     ret.steeringAngle = cp.vl["Steering_Torque"]['Steering_Angle']
     ret.steeringTorque = cp.vl["Steering_Torque"]['Steer_Torque_Sensor']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD[self.car_fingerprint]
@@ -58,41 +64,6 @@ class CarState(CarStateBase):
     return ret
 
   @staticmethod
-  def get_can_parser_init(CP):
-    # this function generates lists for signal, messages and initial values
-    signals = [
-      # sig_name, sig_address, default
-      ("Steer_Torque_Sensor", "Steering_Torque", 0),
-      ("Steering_Angle", "Steering_Torque", 0),
-      ("Cruise_On", "CruiseControl", 0),
-      ("Cruise_Activated", "CruiseControl", 0),
-      ("Brake_Pedal", "Brake_Pedal", 0),
-      ("Throttle_Pedal", "Throttle", 0),
-      ("LEFT_BLINKER", "Dashlights", 0),
-      ("RIGHT_BLINKER", "Dashlights", 0),
-      ("SEATBELT_FL", "Dashlights", 0),
-      ("FL", "Wheel_Speeds", 0),
-      ("FR", "Wheel_Speeds", 0),
-      ("RL", "Wheel_Speeds", 0),
-      ("RR", "Wheel_Speeds", 0),
-      ("DOOR_OPEN_FR", "BodyInfo", 1),
-      ("DOOR_OPEN_FL", "BodyInfo", 1),
-      ("DOOR_OPEN_RR", "BodyInfo", 1),
-      ("DOOR_OPEN_RL", "BodyInfo", 1),
-      ("Units", "Dash_State", 1),
-    ]
-
-    checks = [
-      # sig_address, frequency
-      ("Dashlights", 10),
-      ("CruiseControl", 20),
-      ("Wheel_Speeds", 50),
-      ("Steering_Torque", 50),
-      ("BodyInfo", 10),
-    ]
-
-    return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
-  @staticmethod
   def get_can_parser(CP):
     # this function generates lists for signal, messages and initial values
     signals = [
@@ -115,6 +86,7 @@ class CarState(CarStateBase):
       ("DOOR_OPEN_RR", "BodyInfo", 1),
       ("DOOR_OPEN_RL", "BodyInfo", 1),
       ("Units", "Dash_State", 1),
+      ("Gear", "Transmission", 0),
     ]
 
     checks = [
@@ -139,7 +111,6 @@ class CarState(CarStateBase):
       ("Main", "ES_Distance", 0),
       ("Signal3", "ES_Distance", 0),
 
-      ("Checksum", "ES_LKAS_State", 0),
       ("Counter", "ES_LKAS_State", 0),
       ("Keep_Hands_On_Wheel", "ES_LKAS_State", 0),
       ("Empty_Box", "ES_LKAS_State", 0),

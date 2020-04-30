@@ -8,13 +8,17 @@ import signal
 import shutil
 import subprocess
 import datetime
+import textwrap
+from selfdrive.swaglog import cloudlog, add_logentries_handler
+from selfdrive.dragonpilot.dragonconf import dragonpilot_set_params
 
 from common.basedir import BASEDIR, PARAMS
 from common.android import ANDROID
+WEBCAM = os.getenv("WEBCAM") is not None
 sys.path.append(os.path.join(BASEDIR, "pyextra"))
 os.environ['BASEDIR'] = BASEDIR
 
-TOTAL_SCONS_NODES = 1195
+TOTAL_SCONS_NODES = 1140
 prebuilt = os.path.exists(os.path.join(BASEDIR, 'prebuilt'))
 
 # Create folders needed for msgq
@@ -64,12 +68,13 @@ def unblock_stdout():
 
 if __name__ == "__main__":
   unblock_stdout()
+
+if __name__ == "__main__" and ANDROID:
   from common.spinner import Spinner
+  from common.text_window import TextWindow
 else:
   from common.spinner import FakeSpinner as Spinner
-
-if not (os.system("python3 -m pip list | grep 'scipy' ") == 0):
-  os.system("cd /data/openpilot/installer/scipy_installer/ && ./scipy_installer")
+  from common.text_window import FakeTextWindow as TextWindow
 
 import importlib
 import traceback
@@ -90,25 +95,32 @@ if not prebuilt:
     j_flag = "" if nproc is None else "-j%d" % (nproc - 1)
     scons = subprocess.Popen(["scons", j_flag], cwd=BASEDIR, env=env, stderr=subprocess.PIPE)
 
+    compile_output = []
+
     # Read progress from stderr and update spinner
     while scons.poll() is None:
       try:
         line = scons.stderr.readline()
         if line is None:
           continue
-
         line = line.rstrip()
+
         prefix = b'progress: '
         if line.startswith(prefix):
           i = int(line[len(prefix):])
           if spinner is not None:
-            spinner.update("%d" % (50.0 * (i / TOTAL_SCONS_NODES)))
+            spinner.update("%d" % (70.0 * (i / TOTAL_SCONS_NODES)))
         elif len(line):
-          print(line.decode('utf8'))
+          compile_output.append(line)
+          print(line.decode('utf8', 'replace'))
       except Exception:
         pass
 
     if scons.returncode != 0:
+      # Read remaining output
+      r = scons.stderr.read().split(b'\n')
+      compile_output += r
+
       if retry:
         print("scons build failed, cleaning in")
         for i in range(3,-1,-1):
@@ -117,7 +129,19 @@ if not prebuilt:
         subprocess.check_call(["scons", "-c"], cwd=BASEDIR, env=env)
         shutil.rmtree("/tmp/scons_cache")
       else:
-        raise RuntimeError("scons build failed")
+        # Build failed log errors
+        errors = [line.decode('utf8', 'replace') for line in compile_output
+                  if any([err in line for err in [b'error: ', b'not found, needed by target']])]
+        error_s = "\n".join(errors)
+        add_logentries_handler(cloudlog)
+        cloudlog.error("scons build failed\n" + error_s)
+
+        # Show TextWindow
+        error_s = "\n \n".join(["\n".join(textwrap.wrap(e, 65)) for e in errors])
+        with TextWindow("Openpilot failed to build\n \n" + error_s) as t:
+          t.wait_for_exit()
+
+        exit(1)
     else:
       break
 
@@ -126,7 +150,6 @@ import cereal.messaging as messaging
 
 from common.params import Params
 import selfdrive.crash as crash
-from selfdrive.swaglog import cloudlog
 from selfdrive.registration import register
 from selfdrive.version import version, dirty
 from selfdrive.loggerd.config import ROOT
@@ -140,9 +163,6 @@ ThermalStatus = cereal.log.ThermalData.ThermalStatus
 # comment out anything you don't want to run
 managed_processes = {
   "thermald": "selfdrive.thermald.thermald",
-  "trafficd": ("selfdrive/trafficd", ["./trafficd"]),
-  "traffic_manager": "selfdrive.trafficd.traffic_manager",
-  "thermalonlined": "selfdrive.thermalonlined",
   "uploader": "selfdrive.loggerd.uploader",
   "deleter": "selfdrive.loggerd.deleter",
   "controlsd": "selfdrive.controls.controlsd",
@@ -168,7 +188,11 @@ managed_processes = {
   "updated": "selfdrive.updated",
   "dmonitoringmodeld": ("selfdrive/modeld", ["./dmonitoringmodeld"]),
   "modeld": ("selfdrive/modeld", ["./modeld"]),
-  "mapd": ("selfdrive/mapd", ["./mapd.py"]),
+  "driverview": "selfdrive.controls.lib.driverview",
+  # dp
+  "dashcamd": "selfdrive.dragonpilot.dashcamd.dashcamd",
+  "shutdownd": "selfdrive.dragonpilot.shutdownd.shutdownd",
+  "appd": "selfdrive.dragonpilot.appd.appd",
 }
 
 daemon_processes = {
@@ -197,11 +221,14 @@ persistent_processes = [
   'ui',
   'uploader',
 ]
+
 if ANDROID:
   persistent_processes += [
     'logcatd',
     'tombstoned',
     'updated',
+    'shutdownd',
+    'appd',
   ]
 
 car_started_processes = [
@@ -209,19 +236,21 @@ car_started_processes = [
   'plannerd',
   'loggerd',
   'radard',
-  'trafficd',
+  'dmonitoringd',
   'calibrationd',
   'paramsd',
   'camerad',
   'modeld',
   'proclogd',
   'ubloxd',
-  'mapd',
-  'thermalonlined',
   'locationd',
-  'traffic_manager',
-  'dmonitoringd',
 ]
+
+if WEBCAM:
+  car_started_processes += [
+    'dmonitoringmodeld',
+  ]
+
 if ANDROID:
   car_started_processes += [
     'sensord',
@@ -229,6 +258,7 @@ if ANDROID:
     'gpsd',
     'dmonitoringmodeld',
     'deleter',
+    'dashcamd',
   ]
 
 def register_managed_process(name, desc, car_started=False):
@@ -302,10 +332,9 @@ def prepare_managed_process(p):
       subprocess.check_call(["make", "-j4"], cwd=os.path.join(BASEDIR, proc[0]))
     except subprocess.CalledProcessError:
       # make clean if the build failed
-      if proc[0] != 'selfdrive/mapd':
-        cloudlog.warning("building %s failed, make clean" % (proc, ))
-        subprocess.check_call(["make", "clean"], cwd=os.path.join(BASEDIR, proc[0]))
-        subprocess.check_call(["make", "-j4"], cwd=os.path.join(BASEDIR, proc[0]))
+      cloudlog.warning("building %s failed, make clean" % (proc, ))
+      subprocess.check_call(["make", "clean"], cwd=os.path.join(BASEDIR, proc[0]))
+      subprocess.check_call(["make", "-j4"], cwd=os.path.join(BASEDIR, proc[0]))
 
 
 def join_process(process, timeout):
@@ -365,7 +394,7 @@ def manager_init(should_register=True):
   if should_register:
     reg_res = register()
     if reg_res:
-      dongle_id, dongle_secret = reg_res
+      dongle_id = reg_res
     else:
       raise Exception("server registration failed")
   else:
@@ -398,7 +427,6 @@ def manager_init(should_register=True):
 def manager_thread():
   # now loop
   thermal_sock = messaging.sub_sock('thermal')
-  gps_sock = messaging.sub_sock('gpsLocation', conflate=True)
 
   if os.getenv("GET_CPU_USAGE"):
     proc_sock = messaging.sub_sock('procLog', conflate=True)
@@ -407,13 +435,13 @@ def manager_thread():
   cloudlog.info({"environ": os.environ})
 
   # save boot log
-  #subprocess.call(["./loggerd", "--bootlog"], cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
+  subprocess.call(["./loggerd", "--bootlog"], cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
 
   params = Params()
 
   # start daemon processes
-  #for p in daemon_processes:
-  #  start_daemon_process(p)
+  for p in daemon_processes:
+    start_daemon_process(p)
 
   # start persistent processes
   for p in persistent_processes:
@@ -437,13 +465,8 @@ def manager_thread():
   first_proc = None
 
   while 1:
-    gps = messaging.recv_one_or_none(gps_sock)
     msg = messaging.recv_sock(thermal_sock, wait=True)
-    if gps:
-      if 47.3024876979 < gps.gpsLocation.latitude < 54.983104153 and 5.98865807458 < gps.gpsLocation.longitude < 15.0169958839:
-        logger_dead = True
-      else:
-        logger_dead = True
+
     # heavyweight batch processes are gated on favorable thermal conditions
     if msg.thermal.thermalStatus >= ThermalStatus.yellow:
       for p in green_temp_processes:
@@ -457,7 +480,7 @@ def manager_thread():
     if msg.thermal.freeSpace < 0.05:
       logger_dead = True
 
-    if msg.thermal.started:
+    if msg.thermal.started and "driverview" not in running:
       for p in car_started_processes:
         if p == "loggerd" and logger_dead:
           kill_managed_process(p)
@@ -467,6 +490,11 @@ def manager_thread():
       logger_dead = False
       for p in reversed(car_started_processes):
         kill_managed_process(p)
+      # this is ugly
+      if "driverview" not in running and params.get("IsDriverViewEnabled") == b"1":
+        start_managed_process("driverview")
+      elif "driverview" in running and params.get("IsDriverViewEnabled") == b"0":
+        kill_managed_process("driverview")
 
     # check the status of all processes, did any of them die?
     running_list = ["%s%s\u001b[0m" % ("\u001b[32m" if running[p].is_alive() else "\u001b[31m", p) for p in running]
@@ -485,7 +513,6 @@ def manager_thread():
 
       # Get last sample and exit
       if dt > 90:
-        first_proc = first_proc
         last_proc = messaging.recv_sock(proc_sock, wait=True)
 
         cleanup_all_processes(None, None)
@@ -496,7 +523,7 @@ def manager_prepare(spinner=None):
   os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
   # Spinner has to start from 70 here
-  total = 100.0 if prebuilt else 50.0
+  total = 100.0 if prebuilt else 30.0
 
   for i, p in enumerate(managed_processes):
     if spinner is not None:
@@ -525,6 +552,7 @@ def main():
   default_params = [
     ("CommunityFeaturesToggle", "0"),
     ("CompletedTrainingVersion", "0"),
+    ("IsRHD", "0"),
     ("IsMetric", "0"),
     ("RecordFront", "0"),
     ("HasAcceptedTerms", "0"),
@@ -536,15 +564,19 @@ def main():
     ("LongitudinalControl", "0"),
     ("LimitSetSpeed", "0"),
     ("LimitSetSpeedNeural", "0"),
-    ("LastUpdateTime", datetime.datetime.now().isoformat().encode('utf8')),
+    ("LastUpdateTime", datetime.datetime.utcnow().isoformat().encode('utf8')),
     ("OpenpilotEnabledToggle", "1"),
     ("LaneChangeEnabled", "1"),
+    ("IsDriverViewEnabled", "0"),
   ]
 
   # set unset params
   for k, v in default_params:
     if params.get(k) is None:
       params.put(k, v)
+
+  # dp
+  dragonpilot_set_params(params)
 
   # is this chffrplus?
   if os.getenv("PASSIVE") is not None:
@@ -553,14 +585,27 @@ def main():
   if params.get("Passive") is None:
     raise Exception("Passive must be set to continue")
 
+  reg = False if params.get("DragonEnableRegistration", encoding='utf8') == "0" else True
+
   if ANDROID:
     update_apks()
-  manager_init()
+  manager_init(reg)
   manager_prepare(spinner)
   spinner.close()
 
   if os.getenv("PREPAREONLY") is not None:
     return
+
+  # dp
+  del managed_processes['tombstoned']
+  if params.get("DragonEnableLogger", encoding='utf8') == "0":
+    del managed_processes['loggerd']
+    del managed_processes['logmessaged']
+    del managed_processes['proclogd']
+    del managed_processes['logcatd']
+
+  if params.get("DragonEnableUploader", encoding='utf8') == "0":
+    del managed_processes['uploader']
 
   # SystemExit on sigterm
   signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(1))
@@ -578,7 +623,22 @@ def main():
   if params.get("DoUninstall", encoding='utf8') == "1":
     uninstall()
 
+
 if __name__ == "__main__":
-  main()
+  try:
+    main()
+  except Exception:
+    add_logentries_handler(cloudlog)
+    cloudlog.exception("Manager failed to start")
+
+    # Show last 3 lines of traceback
+    error = traceback.format_exc(3)
+
+    error = "Manager failed to start\n \n" + error
+    with TextWindow(error) as t:
+      t.wait_for_exit()
+
+    raise
+
   # manual exit because we are forked
   sys.exit(0)

@@ -12,6 +12,7 @@
 #define nvgCreate nvgCreateGLES3
 #endif
 
+#include <capnp/serialize.h>
 #include <pthread.h>
 
 #include "nanovg.h"
@@ -22,9 +23,7 @@
 #include "common/framebuffer.h"
 #include "common/modeldata.h"
 #include "messaging.hpp"
-
 #include "cereal/gen/c/log.capnp.h"
-#include "cereal/gen/c/arne182.capnp.h"
 
 #include "sound.hpp"
 
@@ -34,24 +33,29 @@
 #define STATUS_WARNING 3
 #define STATUS_ALERT 4
 
+#define NET_CONNECTED 0
+#define NET_DISCONNECTED 1
+#define NET_ERROR 2
+
 #define ALERTSIZE_NONE 0
 #define ALERTSIZE_SMALL 1
 #define ALERTSIZE_MID 2
 #define ALERTSIZE_FULL 3
 
-#define COLOR_BLACK_ALPHA nvgRGBA(0, 0, 0, 85)
+#define COLOR_BLACK nvgRGBA(0, 0, 0, 255)
+#define COLOR_BLACK_ALPHA(x) nvgRGBA(0, 0, 0, x)
 #define COLOR_WHITE nvgRGBA(255, 255, 255, 255)
-#define COLOR_WHITE_ALPHA nvgRGBA(255, 255, 255, 85)
+#define COLOR_WHITE_ALPHA(x) nvgRGBA(255, 255, 255, x)
 #define COLOR_YELLOW nvgRGBA(218, 202, 37, 255)
 #define COLOR_RED nvgRGBA(201, 34, 49, 255)
-#define COLOR_GREEN nvgRGBA(34, 201, 49, 255)
+#define COLOR_OCHRE nvgRGBA(218, 111, 37, 255)
 
 #ifndef QCOM
   #define UI_60FPS
 #endif
 
 #define UI_BUF_COUNT 4
-#define SHOW_SPEEDLIMIT 1
+//#define SHOW_SPEEDLIMIT 1
 //#define DEBUG_TURN
 
 const int vwp_w = 1920;
@@ -65,6 +69,7 @@ const int box_y = bdr_s;
 const int box_w = vwp_w-sbr_w-(bdr_s*2);
 const int box_h = vwp_h-(bdr_s*2);
 const int viz_w = vwp_w-(bdr_s*2);
+const int ff_xoffset = 32;
 const int header_h = 420;
 const int footer_h = 280;
 const int footer_y = vwp_h-bdr_s-footer_h;
@@ -76,6 +81,18 @@ const int home_btn_h = 180;
 const int home_btn_w = 180;
 const int home_btn_x = 60;
 const int home_btn_y = vwp_h - home_btn_h - 40;
+
+// dp
+// dynamic follow btn
+const int df_btn_h = 180;
+const int df_btn_w = 180;
+const int df_btn_x = 1650;
+const int df_btn_y = 750;
+// accel profile btn
+const int ap_btn_h = 180;
+const int ap_btn_w = 180;
+const int ap_btn_x = 1450;
+const int ap_btn_y = 750;
 
 const int UI_FREQ = 30;   // Hz
 
@@ -112,20 +129,10 @@ typedef struct UIScene {
   uint64_t v_cruise_update_ts;
   float v_ego;
   bool decel_for_model;
-  char ipAddr[20];
-  float gpsAccuracy;
+
   float speedlimit;
-  float angleSteers;
-  float speedlimitaheaddistance;
-  bool speedlimitahead_valid;
   bool speedlimit_valid;
   bool map_valid;
-  bool rightblindspot;
-  float rightblindspotD1;
-  float rightblindspotD2;
-  bool leftblindspot;
-  float leftblindspotD1;
-  float leftblindspotD2;
 
   float curvature;
   int engaged;
@@ -134,18 +141,23 @@ typedef struct UIScene {
 
   bool uilayout_sidebarcollapsed;
   bool uilayout_mapenabled;
+  bool uilayout_mockengaged;
   // responsive layout
   int ui_viz_rx;
   int ui_viz_rw;
   int ui_viz_ro;
 
   int lead_status;
-  int lead_status2;
   float lead_d_rel, lead_y_rel, lead_v_rel;
+
+  int lead_status2;
   float lead_d_rel2, lead_y_rel2, lead_v_rel2;
 
-  int front_box_x, front_box_y, front_box_width, front_box_height;
+  float face_prob;
+  bool is_rhd;
+  float face_x, face_y;
 
+  int front_box_x, front_box_y, front_box_width, front_box_height;
 
   uint64_t alert_ts;
   char alert_text1[1024];
@@ -155,38 +167,35 @@ typedef struct UIScene {
 
   float awareness_status;
 
-  int dfButtonStatus;
-
-  bool recording;
-
-  // gernby pathcoloring
-  float output_scale;
-  bool steerOverride;
-
   // Used to show gps planner status
   bool gps_planner_active;
-
-  // Brake Lights
-  bool brakeLights;
-
-  // kegman blinker
-  bool leftBlinker;
-  bool rightBlinker;
-  int blinker_blinkingrate;
-
-  // dev ui
-  float angleSteersDes;
-  float pa0;
-  float freeSpace;
 
   uint8_t networkType;
   uint8_t networkStrength;
   int batteryPercent;
   char batteryStatus[64];
+  float freeSpace;
   uint8_t thermalStatus;
   int paTemp;
   int hwType;
   int satelliteCount;
+  uint8_t athenaStatus;
+
+  // dp
+  // for minimal UI
+  float angleSteersDes;
+  float angleSteers;
+  char ipAddr[20];
+  int alert_rate;
+  int alert_type;
+  int gearShifter;
+
+  // for blinker, from kegman
+  bool leftBlinker;
+  bool rightBlinker;
+  bool brakeLights;
+  int blinker_blinkingrate;
+
 } UIScene;
 
 typedef struct {
@@ -206,7 +215,6 @@ typedef struct {
 
 typedef struct UIState {
   pthread_mutex_t lock;
-  pthread_cond_t bg_cond;
 
   // framebuffer
   FramebufferState *fb;
@@ -221,11 +229,9 @@ typedef struct UIState {
   int font_sans_semibold;
   int font_sans_bold;
   int img_wheel;
-  int img_speed;
   int img_turn;
   int img_face;
   int img_map;
-  int img_brake;
   int img_button_settings;
   int img_button_home;
   int img_battery;
@@ -234,24 +240,19 @@ typedef struct UIState {
 
   // sockets
   Context *ctx;
-  Context *ctxarne182;
   SubSocket *model_sock;
   SubSocket *controlsstate_sock;
   SubSocket *livecalibration_sock;
   SubSocket *radarstate_sock;
-  SubSocket *carstate_sock;
-  SubSocket *livempc_sock;
   SubSocket *map_data_sock;
   SubSocket *uilayout_sock;
-  SubSocket *gps_sock;
-  SubSocket *arne182_sock;
-  SubSocket *ipaddress_sock;
-  PubSocket *dynamicfollowbutton_sock;
-  Poller * poller;
-  Poller * pollerarne182;
-  SubSocket *thermalonline_sock;
+  SubSocket *thermal_sock;
   SubSocket *health_sock;
   SubSocket *ubloxgnss_sock;
+  SubSocket *driverstate_sock;
+  SubSocket *dmonitoring_sock;
+  PubSocket *offroad_sock;
+  Poller * poller;
   Poller * ublox_poller;
 
   int active_app;
@@ -297,8 +298,12 @@ typedef struct UIState {
   int longitudinal_control_timeout;
   int limit_set_speed_timeout;
   int hardware_timeout;
+  int last_athena_ping_timeout;
+  int offroad_layout_timeout;
 
   bool controls_seen;
+
+  uint64_t last_athena_ping;
   int status;
   bool is_metric;
   bool longitudinal_control;
@@ -310,6 +315,9 @@ typedef struct UIState {
   int alert_size;
   float alert_blinking_alpha;
   bool alert_blinked;
+  bool started;
+  bool thermal_started, preview_started;
+  bool vision_seen;
 
   float light_sensor;
 
@@ -326,8 +334,33 @@ typedef struct UIState {
 
   track_vertices_data track_vertices[2];
 
-  // dev ui
-  SubSocket *thermal_sock;
+  // dp
+  SubSocket *carstate_sock;
+  int dragon_updating_timeout;
+  int dragon_last_modified_timeout;
+
+  bool dragon_ui_speed;
+  bool dragon_ui_event;
+  bool dragon_ui_maxspeed;
+  bool dragon_ui_face;
+  bool dragon_ui_dev;
+  bool dragon_ui_dev_mini;
+  bool dragon_enable_dashcam;
+  float dragon_ui_volume_boost;
+  bool dragon_driving_ui;
+  bool dragon_ui_lane;
+  bool dragon_ui_lead;
+  bool dragon_ui_path;
+  bool dragon_ui_blinker;
+  bool dragon_waze_mode;
+  bool dragon_ui_dm_view;
+  bool dragon_updating;
+  uint64_t dragon_df_mode;
+  uint64_t dragon_ap_mode;
+  bool dragon_enable_dm;
+  char dragon_locale[20];
+  bool dragon_ui_screen_off_reversing;
+  char dragon_last_modified[20];
 } UIState;
 
 // API
@@ -335,6 +368,7 @@ void ui_draw_vision_alert(UIState *s, int va_size, int va_color,
                           const char* va_text1, const char* va_text2);
 void ui_draw(UIState *s);
 void ui_draw_sidebar(UIState *s);
+void ui_draw_image(NVGcontext *vg, float x, float y, float w, float h, int image, float alpha);
 void ui_nvg_init(UIState *s);
 
 #endif

@@ -164,6 +164,9 @@ class CarState(CarStateBase):
     self.v_cruise_pcm_prev = 0
     self.cruise_mode = 0
 
+    # dp
+    self.lkMode = True
+
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
 
@@ -184,11 +187,8 @@ class CarState(CarStateBase):
       ret.doorOpen = bool(cp.vl["SCM_BUTTONS"]['DRIVERS_DOOR_OPEN'])
     else:
       ret.standstill = not cp.vl["STANDSTILL"]['WHEELS_MOVING']
-      if self.CP.carFingerprint == CAR.RIDGELINE:
-        ret.doorOpen = False  
-      else:
-        ret.doorOpen = any([cp.vl["DOORS_STATUS"]['DOOR_OPEN_FL'], cp.vl["DOORS_STATUS"]['DOOR_OPEN_FR'],
-                            cp.vl["DOORS_STATUS"]['DOOR_OPEN_RL'], cp.vl["DOORS_STATUS"]['DOOR_OPEN_RR']])
+      ret.doorOpen = any([cp.vl["DOORS_STATUS"]['DOOR_OPEN_FL'], cp.vl["DOORS_STATUS"]['DOOR_OPEN_FR'],
+                          cp.vl["DOORS_STATUS"]['DOOR_OPEN_RL'], cp.vl["DOORS_STATUS"]['DOOR_OPEN_RR']])
     ret.seatbeltUnlatched = bool(cp.vl["SEATBELT_STATUS"]['SEATBELT_DRIVER_LAMP'] or not cp.vl["SEATBELT_STATUS"]['SEATBELT_DRIVER_LATCHED'])
 
     steer_status = self.steer_status_values[cp.vl["STEER_STATUS"]['STEER_STATUS']]
@@ -218,6 +218,15 @@ class CarState(CarStateBase):
 
     ret.steeringAngle = cp.vl["STEERING_SENSORS"]['STEER_ANGLE']
     ret.steeringRate = cp.vl["STEERING_SENSORS"]['STEER_ANGLE_RATE']
+
+    # dp
+    # when user presses LKAS button on steering wheel
+    if self.cruise_setting == 1:
+      if cp.vl["SCM_BUTTONS"]["CRUISE_SETTING"] == 0:
+        if self.lkMode:
+          self.lkMode = False
+        else:
+          self.lkMode = True
 
     self.cruise_setting = cp.vl["SCM_BUTTONS"]['CRUISE_SETTING']
     self.cruise_buttons = cp.vl["SCM_BUTTONS"]['CRUISE_BUTTONS']
@@ -313,12 +322,6 @@ class CarState(CarStateBase):
       self.stock_brake = cp_cam.vl["BRAKE_COMMAND"]
 
     return ret
-
-  @staticmethod
-  def get_can_parser_init(CP):
-    signals, checks = get_can_signals(CP)
-    bus_pt = 1 if CP.isPandaBlack and CP.carFingerprint in HONDA_BOSCH else 0
-    return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, bus_pt)
 
   @staticmethod
   def get_can_parser(CP):
