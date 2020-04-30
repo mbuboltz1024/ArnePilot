@@ -96,7 +96,7 @@ ALERTS = [
       _("TAKE CONTROL"),
       _("Turn Exceeds Steering Limit"),
       AlertStatus.userPrompt, AlertSize.mid,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
+      Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 2., 3.),
 
   Alert(
       "steerTempUnavailable",
