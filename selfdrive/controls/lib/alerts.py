@@ -117,7 +117,7 @@ ALERTS = [
       _("KEEP EYES ON ROAD: Driver Distracted"),
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, .0, .1, .1, alert_rate=0.75),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, .0, .1, .1, alert_rate=0.75),
 
   Alert(
       "promptDriverDistracted",
@@ -170,10 +170,10 @@ ALERTS = [
 
   Alert(
       "startup",
-      _("Be ready to take over at any time"),
-      _("Always keep hands on wheel and eyes on road"),
-      AlertStatus.normal, AlertSize.mid,
-      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      _("¡Be ready to take over at any time!"),
+      _("Mopar or no car!"),
+      AlertStatus.normal, AlertSize.full,
+      Priority.MID, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
 
   Alert(
       "startupMaster",
