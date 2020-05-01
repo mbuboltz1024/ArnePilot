@@ -830,21 +830,21 @@ ALERTS = [
   Alert(
       "preLaneChangeLeftALC",
       _("Left ALC will engage in 3 seconds"),
-      _("Monitor Other Vehicles"),
+      _("Monitor Traffic"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1, alert_rate=0.75),
 
   Alert(
       "preLaneChangeRightALC",
       _("Right ALC will engage in 3 seconds"),
-      _("Monitor Other Vehicles"),
+      _("Monitor Traffic"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1, alert_rate=0.75),
 
   Alert(
       "laneChangeALC",
       _("Changing Lane"),
-      _("Monitor Other Vehicles"),
+      _("Monitor Traffic"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1),
 
