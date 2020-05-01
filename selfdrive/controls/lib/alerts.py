@@ -173,7 +173,7 @@ ALERTS = [
       _("¡Be ready to take over at any time!"),
       _("Mopar or no car!"),
       AlertStatus.normal, AlertSize.full,
-      Priority.MID, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
+      Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, 0., 0., 15.),
 
   Alert(
       "startupMaster",
