@@ -74,6 +74,13 @@ default_conf = {
   'DragonCustomModel': '',
   'DragonLocale': 'en-US',
   'DragonUIScreenOffReversing': '0',
+  'DragonEnableSRLearner': '1',
+  'DragonEnableSteerBoost': '0',
+  'DragonSteerBoostMin': '10', # percentage
+  'DragonSteerBoostMax': '30', # percentage
+  'DragonSteerBoostMinAt': '7.0',
+  'DragonSteerBoostMaxAt': '15.0',
+  'DragonDashcamHours': '24.0',
 }
 
 deprecated_conf = {
@@ -130,12 +137,11 @@ def get_support_car_list():
                 names.append(f)
           names.sort()
         cars[car_name] = names
-    except (ImportError, IOError):
+    except (ImportError, IOError, ValueError):
       pass
   return json.dumps(cars)
 
 if __name__ == "__main__":
   params = Params()
   params.manager_start()
-
   dragonpilot_set_params(params)

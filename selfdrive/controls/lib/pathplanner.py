@@ -6,11 +6,12 @@ from selfdrive.controls.lib.lateral_mpc import libmpc_py
 from selfdrive.controls.lib.drive_helpers import MPC_COST_LAT
 from selfdrive.controls.lib.lane_planner import LanePlanner
 from selfdrive.config import Conversions as CV
-from common.params import Params
+from common.params import Params, put_nonblocking
 import cereal.messaging as messaging
 from cereal import log
 # dragonpilot
 from common.dp import get_last_modified
+from common.numpy_fast import interp
 
 LaneChangeState = log.PathPlan.LaneChangeState
 LaneChangeDirection = log.PathPlan.LaneChangeDirection
@@ -74,6 +75,11 @@ class PathPlanner():
     self.dragon_auto_lc_delay = 2.
     self.last_ts = 0.
     self.dp_last_modified = None
+    self.dp_enable_sr_boost = False
+
+    self.dp_steer_ratio = 0.
+    self.dp_sr_boost_bp = None
+    self.dp_sr_boost_range = None
 
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
@@ -129,6 +135,24 @@ class PathPlanner():
               self.dragon_auto_lc_delay = 0
         else:
           self.dragon_auto_lc_enabled = False
+
+        self.dp_enable_sr_boost = True if self.params.get("DragonEnableSteerBoost", encoding='utf8') == "1" else False
+        if self.dp_enable_sr_boost:
+          try:
+            sr_boost_min = float(self.params.get("DragonSteerBoostMin", encoding='utf8'))
+            sr_boost_Max = float(self.params.get("DragonSteerBoostMax", encoding='utf8'))
+            self.dp_sr_boost_range = [sr_boost_min, sr_boost_Max]
+
+            boost_min_at = float(self.params.get("DragonSteerBoostMinAt", encoding='utf8'))
+            boost_max_at = float(self.params.get("DragonSteerBoostMaxAt", encoding='utf8'))
+            self.dp_sr_boost_bp = [boost_min_at, boost_max_at]
+          except (TypeError, ValueError):
+            put_nonblocking("DragonEnableSteerBoost", '0')
+            self.dp_enable_sr_boost = False
+        if not self.dp_enable_sr_boost:
+          self.dp_sr_boost_range = [0., 0.]
+          self.dp_sr_boost_bp = [0., 0.]
+
         self.dp_last_modified = modified
       self.last_ts = cur_time
 
@@ -142,6 +166,8 @@ class PathPlanner():
     self.angle_steers_des_prev = self.angle_steers_des_mpc
     VM.update_params(sm['liveParameters'].stiffnessFactor, sm['liveParameters'].steerRatio)
     curvature_factor = VM.curvature_factor(v_ego)
+    boost_rate = (1 + (interp(abs(angle_steers), self.dp_sr_boost_bp, self.dp_sr_boost_range) / 100)) if self.dp_enable_sr_boost else 1
+    self.dp_steer_ratio = VM.sR * boost_rate
 
     self.LP.parse_model(sm['model'])
 
@@ -238,7 +264,7 @@ class PathPlanner():
     self.LP.update_d_poly(v_ego)
 
     # account for actuation delay
-    self.cur_state = calc_states_after_delay(self.cur_state, v_ego, angle_steers - angle_offset, curvature_factor, VM.sR, CP.steerActuatorDelay)
+    self.cur_state = calc_states_after_delay(self.cur_state, v_ego, angle_steers - angle_offset, curvature_factor, self.dp_steer_ratio, CP.steerActuatorDelay)
 
     v_ego_mpc = max(v_ego, 5.0)  # avoid mpc roughness due to low speed
     self.libmpc.run_mpc(self.cur_state, self.mpc_solution,
@@ -248,21 +274,21 @@ class PathPlanner():
     # reset to current steer angle if not active or overriding
     if active:
       delta_desired = self.mpc_solution[0].delta[1]
-      rate_desired = math.degrees(self.mpc_solution[0].rate[0] * VM.sR)
+      rate_desired = math.degrees(self.mpc_solution[0].rate[0] * self.dp_steer_ratio)
     else:
-      delta_desired = math.radians(angle_steers - angle_offset) / VM.sR
+      delta_desired = math.radians(angle_steers - angle_offset) / self.dp_steer_ratio
       rate_desired = 0.0
 
     self.cur_state[0].delta = delta_desired
 
-    self.angle_steers_des_mpc = float(math.degrees(delta_desired * VM.sR) + angle_offset)
+    self.angle_steers_des_mpc = float(math.degrees(delta_desired * self.dp_steer_ratio) + angle_offset)
 
     #  Check for infeasable MPC solution
     mpc_nans = any(math.isnan(x) for x in self.mpc_solution[0].delta)
     t = sec_since_boot()
     if mpc_nans:
       self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.LANE, MPC_COST_LAT.HEADING, CP.steerRateCost)
-      self.cur_state[0].delta = math.radians(angle_steers - angle_offset) / VM.sR
+      self.cur_state[0].delta = math.radians(angle_steers - angle_offset) / self.dp_steer_ratio
 
       if t > self.last_cloudlog_t + 5.0:
         self.last_cloudlog_t = t

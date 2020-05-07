@@ -121,10 +121,11 @@ class CarInterfaceBase():
       events.append(create_event('doorOpen', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
     if cs_out.seatbeltUnlatched:
       events.append(create_event('seatbeltNotLatched', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
-    if cs_out.gearShifter != GearShifter.drive and cs_out.gearShifter not in extra_gears:
-      events.append(create_event('wrongGear', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
-    if cs_out.gearShifter == GearShifter.reverse:
-      events.append(create_event('reverseGear', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
+    if not self.dragon_toyota_stock_dsu:
+      if cs_out.gearShifter != GearShifter.drive and cs_out.gearShifter not in extra_gears:
+        events.append(create_event('wrongGear', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
+      if cs_out.gearShifter == GearShifter.reverse:
+        events.append(create_event('reverseGear', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
     if not cs_out.cruiseState.available:
       events.append(create_event('wrongCarMode', [ET.NO_ENTRY, ET.USER_DISABLE]))
     if cs_out.espDisabled:

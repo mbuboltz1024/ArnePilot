@@ -183,6 +183,13 @@ keys = {
   "DragonSupportedCars": [TxType.PERSISTENT],
   "DragonLocale": [TxType.PERSISTENT],
   "DragonUIScreenOffReversing": [TxType.PERSISTENT],
+  "DragonEnableSRLearner": [TxType.PERSISTENT],
+  "DragonEnableSteerBoost": [TxType.PERSISTENT],
+  "DragonSteerBoostMin": [TxType.PERSISTENT],
+  "DragonSteerBoostMax": [TxType.PERSISTENT],
+  "DragonSteerBoostMinAt": [TxType.PERSISTENT],
+  "DragonSteerBoostMaxAt": [TxType.PERSISTENT],
+  "DragonDashcamHours": [TxType.PERSISTENT],
 }
 
 

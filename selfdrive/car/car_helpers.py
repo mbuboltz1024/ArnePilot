@@ -74,7 +74,10 @@ def only_toyota_left(candidate_cars):
 
 # **** for use live only ****
 def fingerprint(logcan, sendcan, has_relay):
-  if has_relay:
+  dragon_car_model = Params().get("DragonCustomModel", encoding="utf8")
+  has_dragon_car_model = True if len(dragon_car_model) else False
+
+  if not has_dragon_car_model and has_relay:
     # Vin query only reliably works thorugh OBDII
     bus = 1
 
@@ -106,7 +109,7 @@ def fingerprint(logcan, sendcan, has_relay):
   frame = 0
   frame_fingerprint = 10  # 0.1s
   car_fingerprint = None
-  done = False
+  done = True if has_dragon_car_model else False
 
   while not done:
     a = messaging.get_one_can(logcan)
@@ -144,20 +147,19 @@ def fingerprint(logcan, sendcan, has_relay):
 
   source = car.CarParams.FingerprintSource.can
 
-  # If FW query returns exactly 1 candidate, use it
-  if len(fw_candidates) == 1:
-    car_fingerprint = list(fw_candidates)[0]
-    source = car.CarParams.FingerprintSource.fw
-
-  fixed_fingerprint = os.environ.get('FINGERPRINT', "")
-  if len(fixed_fingerprint):
-    car_fingerprint = fixed_fingerprint
-    source = car.CarParams.FingerprintSource.fixed
-
-  dragon_car_model = Params().get("DragonCustomModel", encoding="utf8")
-  if len(dragon_car_model):
+  if has_dragon_car_model:
     car_fingerprint = dragon_car_model
     source = car.CarParams.FingerprintSource.fixed
+  else:
+    # If FW query returns exactly 1 candidate, use it
+    if len(fw_candidates) == 1:
+      car_fingerprint = list(fw_candidates)[0]
+      source = car.CarParams.FingerprintSource.fw
+
+    fixed_fingerprint = os.environ.get('FINGERPRINT', "")
+    if len(fixed_fingerprint):
+      car_fingerprint = fixed_fingerprint
+      source = car.CarParams.FingerprintSource.fixed
 
   put_nonblocking("DragonCarModel", car_fingerprint)
   cloudlog.warning("fingerprinted %s", car_fingerprint)

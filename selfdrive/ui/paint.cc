@@ -524,7 +524,7 @@ static void ui_draw_vision_maxspeed(UIState *s) {
     nvgText(s->vg, viz_maxspeed_x+(viz_maxspeed_xo/2)+(viz_maxspeed_w/2), 242, maxspeed_str, NULL);
   } else {
     nvgFontFaceId(s->vg, s->font_sans_semibold);
-    nvgFontSize(s->vg, 42*2.5);
+    nvgFontSize(s->vg, (strcmp(s->dragon_locale, "zh-TW") == 0? 42*1.5 : strcmp(s->dragon_locale, "zh-CN") == 0? 42*1.5 : 42*2.5));
     nvgFillColor(s->vg, COLOR_WHITE_ALPHA(100));
     nvgText(s->vg, viz_maxspeed_x+(viz_maxspeed_xo/2)+(viz_maxspeed_w/2), 242,
     (strcmp(s->dragon_locale, "zh-TW") == 0? "未設定" : strcmp(s->dragon_locale, "zh-CN") == 0? "未设置" : "N/A"),
@@ -617,7 +617,7 @@ static void ui_draw_vision_speedlimit(UIState *s) {
     nvgText(s->vg, viz_speedlim_x+viz_speedlim_w/2, viz_speedlim_y + (is_speedlim_valid ? 170 : 165), speedlim_str, NULL);
   } else {
     nvgFontFaceId(s->vg, s->font_sans_semibold);
-    nvgFontSize(s->vg, 42*2.5);
+    nvgFontSize(s->vg, (strcmp(s->dragon_locale, "zh-TW") == 0? 42*1.5 : strcmp(s->dragon_locale, "zh-CN") == 0? 42*1.5 : 42*2.5));
     nvgText(s->vg, viz_speedlim_x+viz_speedlim_w/2, viz_speedlim_y + (is_speedlim_valid ? 170 : 165),
     (strcmp(s->dragon_locale, "zh-TW") == 0? "未設定" : strcmp(s->dragon_locale, "zh-CN") == 0? "未设置" : "N/A"),
     NULL);

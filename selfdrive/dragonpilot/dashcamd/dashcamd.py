@@ -20,15 +20,36 @@ dashcam_videos = '/sdcard/dashcam/'
 duration = 60 # max is 180
 bit_rates = 2560000 # max is 4000000
 max_size_per_file = bit_rates/8*duration # 2.56Mbps / 8 * 60 = 19.2MB per 60 seconds
-max_storage = max_size_per_file/duration*60*60*6 # 6 hours worth of footage (around 7gb)
+try:
+  dragon_dashcam_hours = float(params.get("DragonDashcamHours", encoding='utf8')) * 60 * 60
+except (TypeError, ValueError):
+  dragon_dashcam_hours = 24. * 60 * 60
+max_storage = (max_size_per_file/duration) * dragon_dashcam_hours
 freespace_limit = 0.15 # we start cleaning up footage when freespace is below 15%
 
 def main(gctx=None):
-  if not os.path.exists(dashcam_videos):
-    os.makedirs(dashcam_videos)
+  retry = 0
+  folder_exists = False
+  dashcam_allowed = True
+  # make sure dashcam folder exists
+  while not folder_exists:
+    try:
+      if not os.path.exists(dashcam_videos):
+        os.makedirs(dashcam_videos)
+      else:
+        folder_exists = True
+        break
+    except OSError:
+      pass
+    if retry >= 5:
+      folder_exists = True
+      dashcam_allowed = False
+
+    retry += 1
+    time.sleep(5)
 
   thermal_sock = messaging.sub_sock('thermal')
-  while 1:
+  while dashcam_allowed:
     if params.get("DragonEnableDashcam", encoding='utf8') == "1":
       now = datetime.datetime.now()
       file_name = now.strftime("%Y-%m-%d_%H-%M-%S")
