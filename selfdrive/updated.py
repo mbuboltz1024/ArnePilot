@@ -117,8 +117,15 @@ def set_update_available_params(new_version=False):
   params.put("LastUpdateTime", t.encode('utf8'))
 
   if new_version:
+    branch_name = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], FINALIZED).rstrip()
+    if branch_name == "testing":
+      postfix = ''
+    elif branch_name == "devel-i18n":
+      postfix = '-DEV'
+    else:
+      postfix = '-REL'
     try:
-      with open(os.path.join(FINALIZED, "RELEASES.md"), "rb") as f:
+      with open(os.path.join(FINALIZED, f"CHANGELOGS{postfix}.md"), "rb") as f:
         r = f.read()
       r = r[:r.find(b'\n\n')]  # Slice latest release notes
       params.put("ReleaseNotes", r + b"\n")
@@ -313,7 +320,7 @@ def attempt_update():
   set_update_available_params(new_version=new_version)
 
 
-def main_bak():
+def main():
   update_failed_count = 0
   overlay_init_done = False
   wait_helper = WaitTimeHelper()
@@ -378,42 +385,6 @@ def main_bak():
     if wait_helper.shutdown:
       break
 
-  # We've been signaled to shut down
-  dismount_ovfs()
-
-def main(gctx=None):
-  wait_helper = WaitTimeHelper()
-  params = Params()
-
-  while True:
-    # try network
-    online = is_online()
-
-    if online:
-      # download application update
-      git_fetch_output = run(NICE_LOW_PRIORITY + ["git", "-C", "/data/openpilot/", "fetch"])
-      cloudlog.info("git fetch success: %s", git_fetch_output)
-
-      # Write update available param
-      cur_hash = run(["git", "-C", "/data/openpilot/", "rev-parse", "HEAD"]).rstrip()
-      upstream_hash = run(["git", "-C", "/data/openpilot/", "rev-parse", "@{u}"]).rstrip()
-      cloudlog.info("comparing %s to %s" % (cur_hash, upstream_hash))
-      params.put("UpdateAvailable", str(int(cur_hash != upstream_hash)))
-
-      # Write latest release notes to param
-      try:
-        r = subprocess.check_output(["curl", "-H", "'Cache-Control: no-cache'", "-s", "https://raw.githubusercontent.com/dragonpilot-community/dragonpilot/docs/CHANGELOG.md"])
-        r = r[:r.find(b'\n\n')] # Slice latest release notes
-        params.put("ReleaseNotes", r + b"\n")
-      except:
-        params.put("ReleaseNotes", "")
-
-      t = datetime.datetime.now().isoformat()
-      params.put("LastUpdateTime", t.encode('utf8'))
-
-    wait_between_updates(wait_helper.ready_event)
-    if wait_helper.shutdown:
-      break
   # We've been signaled to shut down
   dismount_ovfs()
 

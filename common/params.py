@@ -190,6 +190,11 @@ keys = {
   "DragonSteerBoostMinAt": [TxType.PERSISTENT],
   "DragonSteerBoostMaxAt": [TxType.PERSISTENT],
   "DragonDashcamHours": [TxType.PERSISTENT],
+  "DragonUIScreenOffDriving": [TxType.PERSISTENT],
+  "DragonEnableAutoUpdate": [TxType.PERSISTENT],
+  "DragonUIBrightness": [TxType.PERSISTENT],
+  "DragonDashcamImpactDetect": [TxType.PERSISTENT],
+  "DragonDashcamImpactDetectStarted": [TxType.CLEAR_ON_MANAGER_START],
 }
 
 

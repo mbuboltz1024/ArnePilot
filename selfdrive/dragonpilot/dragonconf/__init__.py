@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.7
 from common.params import Params, put_nonblocking
 import time
 from math import floor
@@ -81,6 +81,10 @@ default_conf = {
   'DragonSteerBoostMinAt': '7.0',
   'DragonSteerBoostMaxAt': '15.0',
   'DragonDashcamHours': '24.0',
+  'DragonUIScreenOffDriving': '0',
+  'DragonUIBrightness': '0',
+  'DragonDashcamImpactDetect': '0',
+  'DragonDashcamImpactDetectStarted': '0',
 }
 
 deprecated_conf = {

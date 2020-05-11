@@ -75,6 +75,7 @@ Supported Cars
 | Honda     | CR-V 2017-19                  | Honda Sensing     | Stock            | 0mph               | 12mph             |
 | Honda     | CR-V Hybrid 2017-2019         | Honda Sensing     | Stock            | 0mph               | 12mph             |
 | Honda     | Fit 2018-19                   | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
+| Honda     | HR-V 2019                     | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 12mph             |
 | Honda     | Insight 2019                  | Honda Sensing     | Stock            | 0mph               | 3mph              |
 | Honda     | Odyssey 2018-20               | Honda Sensing     | openpilot        | 25mph<sup>1</sup>  | 0mph              |
 | Honda     | Passport 2019                 | All               | openpilot        | 25mph<sup>1</sup>  | 12mph             |
@@ -103,6 +104,7 @@ Supported Cars
 | Toyota    | Highlander 2017-19            | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Highlander Hybrid 2017-19     | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Highlander 2020               | All               | openpilot        | 0mph               | 0mph              |
+| Toyota    | Highlander Hybrid 2020        | All               | openpilot        | 0mph               | 0mph              |
 | Toyota    | Prius 2016                    | TSS-P             | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Prius 2017-19                 | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
 | Toyota    | Prius Prime 2017-20           | All               | Stock<sup>3</sup>| 0mph               | 0mph              |
@@ -155,7 +157,7 @@ Community Maintained Cars and Features
 | Nissan    | Leaf 2019                     | Propilot          | Stock            | 0mph               | 0mph         |
 | Nissan    | X-Trail 2018                  | Propilot          | Stock            | 0mph               | 0mph         |
 | Subaru    | Crosstrek 2018-19             | EyeSight          | Stock            | 0mph               | 0mph         |
-| Subaru    | Impreza 2019-20               | EyeSight          | Stock            | 0mph               | 0mph         |
+| Subaru    | Impreza 2018-20               | EyeSight          | Stock            | 0mph               | 0mph         |
 | Volkswagen| Golf 2016-19<sup>3</sup>      | Driver Assistance | Stock            | 0mph               | 0mph         |
 
 <sup>1</sup>Requires a [panda](https://comma.ai/shop/products/panda-obd-ii-dongle) and [community built giraffe](https://zoneos.com/volt/). ***NOTE: disconnecting the ASCM disables Automatic Emergency Braking (AEB).*** <br />
@@ -325,3 +327,8 @@ NO WARRANTY EXPRESSED OR IMPLIED.**
 ---
 
 <img src="https://d1qb2nb5cznatu.cloudfront.net/startups/i/1061157-bc7e9bf3b246ece7322e6ffe653f6af8-medium_jpg.jpg?buster=1458363130" width="75"></img> <img src="https://cdn-images-1.medium.com/max/1600/1*C87EjxGeMPrkTuVRVWVg4w.png" width="225"></img>
+
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/commaai/openpilot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/commaai/openpilot/alerts/)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/commaai/openpilot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/commaai/openpilot/context:python)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/commaai/openpilot.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/commaai/openpilot/context:cpp)
+[![codecov](https://codecov.io/gh/commaai/openpilot/branch/master/graph/badge.svg)](https://codecov.io/gh/commaai/openpilot)

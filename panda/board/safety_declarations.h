@@ -89,6 +89,15 @@ bool gas_interceptor_detected = false;
 int gas_interceptor_prev = 0;
 bool gas_pressed_prev = false;
 bool brake_pressed_prev = false;
+bool cruise_engaged_prev = false;
+bool vehicle_moving = false;
+
+// for torque-based safety modes
+int desired_torque_last = 0;       // last desired steer torque
+int rt_torque_last = 0;            // last desired torque for real time check
+struct sample_t torque_meas;       // last 3 motor torques produced by the eps
+struct sample_t torque_driver;     // last 3 driver torques measured
+uint32_t ts_last = 0;
 
 // This can be set with a USB command
 // It enables features we consider to be unsafe, but understand others may have different opinions

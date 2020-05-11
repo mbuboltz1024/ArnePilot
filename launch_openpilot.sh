@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-
+/usr/bin/sh /data/openpilot/scripts/toyota_dsu+_mode.sh
 if [ -f "/sdcard/dp_patcher.py" ]; then
     /data/data/com.termux/files/usr/bin/python /sdcard/dp_patcher.py
 fi

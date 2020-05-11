@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 import os
 import json
 import copy
@@ -215,7 +215,7 @@ def thermald_thread():
     if ts - ts_last_update_vars >= 10.:
       modified = get_last_modified()
       if dp_last_modified != modified:
-        dp_temp_monitor = True if params.get('DragonEnableTempMonitor', encoding='utf8') == "1" else False
+        dp_temp_monitor = False if params.get('DragonEnableTempMonitor', encoding='utf8') == "0" else True
         if not is_uno:
           dragon_charging_ctrl = True if params.get('DragonChargingCtrl', encoding='utf8') == "1" else False
           if dragon_charging_ctrl:
@@ -269,6 +269,9 @@ def thermald_thread():
           health_prev.health.hwType != log.HealthData.HwType.unknown:
           params.panda_disconnect()
       health_prev = health
+
+      if not ignition and params.get("DragonDashcamImpactDetectStarted", encoding='utf8') == "1":
+        ignition = True
 
     # get_network_type is an expensive call. update every 10s
     if (count % int(10. / DT_TRML)) == 0:
@@ -340,6 +343,9 @@ def thermald_thread():
       thermal_status = clip(thermal_status, ThermalStatus.green, ThermalStatus.yellow)
     else:
       # all good
+      thermal_status = ThermalStatus.green
+
+    if dp_temp_monitor:
       thermal_status = ThermalStatus.green
 
     # **** starting logic ****
@@ -417,14 +423,13 @@ def thermald_thread():
 
     # if any CPU gets above 107 or the battery gets above 63, kill all processes
     # controls will warn with CPU above 95 or battery above 60
-    if dp_temp_monitor:
-      if thermal_status >= ThermalStatus.danger:
-        should_start = False
-        if thermal_status_prev < ThermalStatus.danger:
-          put_nonblocking("Offroad_TemperatureTooHigh", json.dumps(OFFROAD_ALERTS["Offroad_TemperatureTooHigh"]))
-      else:
-        if thermal_status_prev >= ThermalStatus.danger:
-          params.delete("Offroad_TemperatureTooHigh")
+    if thermal_status >= ThermalStatus.danger:
+      should_start = False
+      if thermal_status_prev < ThermalStatus.danger:
+        put_nonblocking("Offroad_TemperatureTooHigh", json.dumps(OFFROAD_ALERTS["Offroad_TemperatureTooHigh"]))
+    else:
+      if thermal_status_prev >= ThermalStatus.danger:
+        params.delete("Offroad_TemperatureTooHigh")
 
     if should_start:
       if not should_start_prev:

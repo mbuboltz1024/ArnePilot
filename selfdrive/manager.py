@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 import os
 import time
 import sys
@@ -243,7 +243,7 @@ car_started_processes = [
   'modeld',
   'proclogd',
   'ubloxd',
-  'locationd',
+  #'locationd',
 ]
 
 if WEBCAM:
@@ -258,7 +258,6 @@ if ANDROID:
     'gpsd',
     'dmonitoringmodeld',
     'deleter',
-    'dashcamd',
   ]
 
 def register_managed_process(name, desc, car_started=False):
@@ -434,10 +433,18 @@ def manager_thread():
   cloudlog.info("manager start")
   cloudlog.info({"environ": os.environ})
 
-  # save boot log
-  subprocess.call(["./loggerd", "--bootlog"], cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
-
   params = Params()
+
+  # dp
+  # save boot log
+  if params.get("DragonEnableLogger", encoding='utf8') == "1":
+    subprocess.call(["./loggerd", "--bootlog"], cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
+
+  if params.get("DragonEnableDashcam", encoding='utf8') == "1":
+    persistent_processes.append('dashcamd')
+    if params.get("DragonDashcamImpactDetect", encoding='utf8') == "1":
+      car_started_processes.remove('sensord')
+      persistent_processes.append('sensord')
 
   # start daemon processes
   for p in daemon_processes:
@@ -606,6 +613,8 @@ def main():
 
   if params.get("DragonEnableUploader", encoding='utf8') == "0":
     del managed_processes['uploader']
+  if params.get("DragonEnableAutoUpdate", encoding='utf8') == "0":
+    del managed_processes['updated']
 
   # SystemExit on sigterm
   signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(1))

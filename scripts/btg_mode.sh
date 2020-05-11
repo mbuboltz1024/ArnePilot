@@ -1,6 +1,5 @@
 #!/usr/bin/bash
 
-mode=$1
 if [ $1 -eq 1 ]; then
   printf %s "1" > /data/params/d/DragonBTG
 fi
