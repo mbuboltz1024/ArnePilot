@@ -117,6 +117,9 @@ DBC = {
   CAR.JEEP_CHEROKEE_2019: dbc_dict(  # Same DBC file works.
     'chrysler_pacifica_2017_hybrid',  # 'pt'
     'chrysler_pacifica_2017_hybrid_private_fusion'),  # 'radar'
+  CAR.CHRYSLER_300_2018: dbc_dict(  # Same DBC file works.
+    'chrysler_pacifica_2017_hybrid',  # 'pt'
+    'chrysler_pacifica_2017_hybrid_private_fusion'),  # 'radar'
 }
 
 STEER_THRESHOLD = 120
