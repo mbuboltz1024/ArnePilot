@@ -646,6 +646,7 @@ void handle_message(UIState *s,  Message* msg) {
     scene.leftBlinker = data.getLeftBlinker();
     scene.rightBlinker = data.getRightBlinker();
     scene.brakeLights = data.getBrakeLights();
+    scene.isReversing = data.getGearShifter() == cereal::CarState::GearShifter::REVERSE;
   }
 
   s->started = s->thermal_started || s->preview_started ;
@@ -1108,7 +1109,7 @@ int main(int argc, char* argv[]) {
     } else {
       if (s->dragon_ui_screen_off_driving) {
         // do nothing
-      } else if (s->scene.gearShifter == 4 && s->dragon_ui_screen_off_reversing) {
+      } else if (s->scene.isReversing && s->dragon_ui_screen_off_reversing) {
         set_awake(s, false);
       } else {
         set_awake(s, true);

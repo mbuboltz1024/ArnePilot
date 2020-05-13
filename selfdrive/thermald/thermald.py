@@ -237,6 +237,10 @@ def thermald_thread():
     location = location.gpsLocation if location else None
     msg = read_thermal()
 
+    if params.get('DragonNoctuaMode', encoding='utf8') == "1":
+      setup_eon_fan()
+      handle_fan = handle_fan_eon
+
     if health is not None:
       usb_power = health.health.usbPowerMode != log.HealthData.UsbPowerMode.client
 
@@ -345,7 +349,7 @@ def thermald_thread():
       # all good
       thermal_status = ThermalStatus.green
 
-    if dp_temp_monitor:
+    if not dp_temp_monitor:
       thermal_status = ThermalStatus.green
 
     # **** starting logic ****

@@ -133,7 +133,7 @@ class CarController():
     self.brake_last = rate_limit(brake, self.brake_last, -2., DT_CTRL)
 
     # vehicle hud display, wait for one update from 10Hz 0x304 msg
-    if hud_show_lanes:
+    if hud_show_lanes and CS.lkMode:
       hud_lanes = 1
     else:
       hud_lanes = 0

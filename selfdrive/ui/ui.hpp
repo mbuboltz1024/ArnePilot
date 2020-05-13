@@ -181,7 +181,7 @@ typedef struct UIScene {
   int alert_rate;
   int alert_type;
   // for black screen on reversing
-  int gearShifter;
+  bool isReversing;
 
   // for blinker, from kegman
   bool leftBlinker;

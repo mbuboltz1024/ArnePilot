@@ -145,7 +145,7 @@ class App():
       result = subprocess.check_output(["dumpsys", "package", self.app, "|", "grep", "versionName"], encoding='utf8')
       if len(result) > 12:
         return re.findall(r"versionName=(.*)", result)[0]
-    except subprocess.CalledProcessError as e:
+    except (subprocess.CalledProcessError, IndexError) as e:
       pass
     return None
 

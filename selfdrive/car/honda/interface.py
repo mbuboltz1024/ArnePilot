@@ -386,8 +386,6 @@ class CarInterface(CarInterfaceBase):
     else:
       raise ValueError("unsupported car %s" % candidate)
 
-    ret.steerControlType = car.CarParams.SteerControlType.torque
-
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter. Otherwise, add 0.5 mph margin to not
     # conflict with PCM acc
@@ -432,6 +430,9 @@ class CarInterface(CarInterfaceBase):
     ret.brakeLights = bool(self.CS.brake_switch or
                            c.actuators.brake > brakelights_threshold)
 
+    # dp
+    ret.lkMode = self.CS.lkMode
+
     buttonEvents = []
 
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
@@ -470,6 +471,8 @@ class CarInterface(CarInterfaceBase):
 
     # events
     events = self.create_common_events(ret, pcm_enable=False)
+    if not self.CS.lkMode:
+      events.append(create_event('manualSteeringRequired', [ET.WARNING]))
     if self.CS.brake_error:
       events.append(create_event('brakeUnavailable', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE, ET.PERMANENT]))
     if self.CS.brake_hold and self.CS.CP.carFingerprint not in HONDA_BOSCH:

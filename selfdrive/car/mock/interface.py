@@ -29,6 +29,16 @@ class CarInterface(CarInterfaceBase):
     self.yaw_rate = 0.
     self.yaw_rate_meas = 0.
 
+    # dp
+    # mock override constructor so we need to define here as well.
+    self.dragon_toyota_stock_dsu = False
+    self.dragon_enable_steering_on_signal = False
+    self.dragon_allow_gas = False
+    self.ts_last_check = 0.
+    self.dragon_lat_ctrl = True
+    self.dp_last_modified = None
+    self.dp_gear_check = True
+
   @staticmethod
   def compute_gb(accel, speed):
     return accel
