@@ -1,4 +1,16 @@
-2020-05-10 (dp 0.7.5 v2)
+2020-05-15 (0.7.5)
+========================
+* 新增「通過移動網路上傳」開關
+* Added Upload Over Mobile Network toggle.
+* 新增「通過熱點上傳」開關
+* Added Upload Over Hotspot toggle.
+* 新增加拿大版 2018 Toyota Sienna LTD 指紋(v1)。(感謝 明峰 提供)
+* Added Canada 2018 Toyota Sienna LTD fingerprint (v1). (Thanks to 明峰)
+* 新增大陸版 Volkswagen Golf GTI 指紋 (v1)。(感謝 easyeiji 提供)
+* Added China Volkswagen Golf GTI fingerprint (v1). (Thanks to easyeiji)
+
+
+2020-05-10
 ========================
 * 基於最新 openpilot 0.7.5 devel-staging.
 * Based on latest openpilot 0.7.5 devel-staging.

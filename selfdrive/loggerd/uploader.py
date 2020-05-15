@@ -10,6 +10,8 @@ import requests
 import traceback
 import threading
 import subprocess
+from common.realtime import sec_since_boot
+from common.dp import get_last_modified
 
 from selfdrive.swaglog import cloudlog
 from selfdrive.loggerd.config import ROOT
@@ -244,11 +246,26 @@ def uploader_fn(exit_event):
   uploader = Uploader(dongle_id, ROOT)
 
   backoff = 0.1
+
+  # dp
+  last_ts = None
+  dp_last_modified = None
+  on_hotspot = False
+  on_wifi = False
+  should_upload = False
+  allow_raw_upload = True
+
   while True:
-    allow_raw_upload = (params.get("IsUploadRawEnabled") != b"0")
-    on_hotspot = is_on_hotspot()
-    on_wifi = is_on_wifi()
-    should_upload = on_wifi and not on_hotspot
+    ts = sec_since_boot()
+    if last_ts is None or ts - last_ts >= 5.:
+      modified = get_last_modified()
+      if dp_last_modified != modified:
+        on_hotspot = False if (params.get("DragonEnableUploadOnHotspot") == b"1") else is_on_hotspot()
+        on_wifi = False if (params.get("DragonEnableUploadOnMobile") == b"1") else is_on_wifi()
+        allow_raw_upload = (params.get("IsUploadRawEnabled") != b"0")
+        should_upload = on_wifi and not on_hotspot
+        dp_last_modified = modified
+      last_ts = ts
 
     if exit_event.is_set():
       return

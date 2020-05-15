@@ -195,6 +195,8 @@ keys = {
   "DragonUIBrightness": [TxType.PERSISTENT],
   "DragonDashcamImpactDetect": [TxType.PERSISTENT],
   "DragonDashcamImpactDetectStarted": [TxType.CLEAR_ON_MANAGER_START],
+  "DragonEnableUploadOnMobile": [TxType.PERSISTENT],
+  "DragonEnableUploadOnHotspot": [TxType.PERSISTENT],
 }
 
 

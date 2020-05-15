@@ -85,6 +85,8 @@ default_conf = {
   'DragonUIBrightness': '0',
   'DragonDashcamImpactDetect': '0',
   'DragonDashcamImpactDetectStarted': '0',
+  'DragonEnableUploadOnMobile': '0',
+  'DragonEnableUploadOnHotspot': '0',
 }
 
 deprecated_conf = {
