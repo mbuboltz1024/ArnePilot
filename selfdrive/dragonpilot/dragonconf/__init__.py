@@ -87,6 +87,7 @@ default_conf = {
   'DragonDashcamImpactDetectStarted': '0',
   'DragonEnableUploadOnMobile': '0',
   'DragonEnableUploadOnHotspot': '0',
+  'DragonMaxSpeedLimit': '92',
 }
 
 deprecated_conf = {

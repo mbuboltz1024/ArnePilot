@@ -72,7 +72,7 @@ def events_to_bytes(events):
   return ret
 
 
-def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params, dragon_toyota_stock_dsu):
+def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params, dragon_toyota_stock_dsu, dp_max_speed_limit):
   """Receive data from sockets and create events for battery, temperature and disk space"""
 
   # Update carstate from CAN and create events
@@ -119,7 +119,7 @@ def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter
     else:
       events.append(create_event('calibrationInvalid', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
 
-  if CS.vEgo > 92 * CV.MPH_TO_MS:
+  if CS.vEgo > dp_max_speed_limit:
     events.append(create_event('speedTooHigh', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
 
   # When the panda and controlsd do not agree on controls_allowed
@@ -554,6 +554,7 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
   dragon_lead_car_moving_alert = False
   dp_last_modified = None
   dp_camera_offset = CAMERA_OFFSET
+  dp_max_speed_limit = 92. * CV.MPH_TO_MS
 
   while True:
     start_time = sec_since_boot()
@@ -567,6 +568,10 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
           dp_camera_offset = int(params.get("DragonCameraOffset", encoding='utf8')) * 0.01
         except (TypeError, ValueError):
           dp_camera_offset = CAMERA_OFFSET
+        try:
+          dp_max_speed_limit = float(params.get("DragonMaxSpeedLimit", encoding='utf8')) * CV.MPH_TO_MS
+        except (TypeError, ValueError):
+          dp_max_speed_limit = 92. * CV.MPH_TO_MS
         dragon_toyota_stock_dsu = True if params.get("DragonToyotaStockDSU", encoding='utf8') == "1" else False
         dragon_lat_control = False if params.get("DragonLatCtrl", encoding='utf8') == "0" else True
         if dragon_lat_control:
@@ -580,7 +585,7 @@ def controlsd_thread(sm=None, pm=None, can_sock=None):
     prof.checkpoint("Ratekeeper", ignore=True)
 
     # Sample data and compute car events
-    CS, events, cal_perc, mismatch_counter, can_error_counter = data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params, dragon_toyota_stock_dsu)
+    CS, events, cal_perc, mismatch_counter, can_error_counter = data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter, params, dragon_toyota_stock_dsu, dp_max_speed_limit)
     prof.checkpoint("Sample")
 
     # Create alerts

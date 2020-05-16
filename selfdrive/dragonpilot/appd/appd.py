@@ -15,7 +15,7 @@ import os
 from common.dp import is_online
 
 is_online = is_online()
-is_gitee_src = "gitee" in subprocess.check_output(["git", "-C", "/data/openpilot", "config", "--get", "remote.origin.url"]).decode('utf8').rstrip()
+is_cnpmjs_src = "cnpmjs" in subprocess.check_output(["git", "-C", "/data/openpilot", "config", "--get", "remote.origin.url"]).decode('utf8').rstrip()
 auto_update = params.get("DragonAppAutoUpdate", encoding='utf8') == "1"
 
 class App():
@@ -94,8 +94,8 @@ class App():
   def get_remote_version(self):
     apk = self.app + ".apk"
     try:
-      if is_gitee_src:
-        url = "https://gitee.com/dragonpilot/apps/raw/%s/VERSION" % apk
+      if is_cnpmjs_src:
+        url = "https://github.com.cnpmjs.org/dragonpilot-community/apps/raw/%s/VERSION" % apk
       else:
         url = "https://raw.githubusercontent.com/dragonpilot-community/apps/%s/VERSION" % apk
       return subprocess.check_output(["curl", "-H", "'Cache-Control: no-cache'", "-s", url], stderr=subprocess.STDOUT, shell=True).decode('utf8').rstrip()
@@ -128,7 +128,10 @@ class App():
     #     pass
     try:
       put_nonblocking('DragonUpdating', '1')
-      url = "https://raw.githubusercontent.com/dragonpilot-community/apps/%s/%s" % (apk, apk)
+      if is_cnpmjs_src:
+        url = "https://github.com.cnpmjs.org/dragonpilot-community/apps/blob/%s/%s" % (apk, apk)
+      else:
+        url = "https://raw.githubusercontent.com/dragonpilot-community/apps/%s/%s" % (apk, apk)
       subprocess.check_output(["curl","-o", apk_path,"-LJO", url])
       subprocess.check_output(["pm","install","-r",apk_path])
       self.is_installed = True

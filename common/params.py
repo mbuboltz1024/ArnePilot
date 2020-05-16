@@ -197,6 +197,7 @@ keys = {
   "DragonDashcamImpactDetectStarted": [TxType.CLEAR_ON_MANAGER_START],
   "DragonEnableUploadOnMobile": [TxType.PERSISTENT],
   "DragonEnableUploadOnHotspot": [TxType.PERSISTENT],
+  "DragonMaxSpeedLimit": [TxType.PERSISTENT],
 }
 
 
