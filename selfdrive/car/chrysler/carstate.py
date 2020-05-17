@@ -22,7 +22,7 @@ class CarState(CarStateBase):
                         cp.vl["DOORS"]['DOOR_OPEN_FR'],
                         cp.vl["DOORS"]['DOOR_OPEN_RL'],
                         cp.vl["DOORS"]['DOOR_OPEN_RR']])
-    ret.seatbeltUnlatched = cp.vl["SEATBELT_STATUS"]['SEATBELT_DRIVER_UNLATCHED'] == 1
+    ret.seatbeltUnlatched = cp.vl["SEATBELT_STATUS"]['SEATBELT_DRIVER'] == 1 or cp.vl["SEATBELT_STATUS"]['SEATBELT_DRIVER'] == 2 # 1 or 2 means unbuckled. 
 
     ret.brakePressed = cp.vl["BRAKE_2"]['BRAKE_PRESSED_2'] == 5 # human-only
     ret.brake = 0
@@ -92,7 +92,7 @@ class CarState(CarStateBase):
       ("LKAS_STATE", "EPS_STATUS", 1),
       ("COUNTER", "EPS_STATUS", -1),
       ("TRACTION_OFF", "TRACTION_BUTTON", 0),
-      ("SEATBELT_DRIVER_UNLATCHED", "SEATBELT_STATUS", 0),
+      ("SEATBELT_DRIVER", "SEATBELT_STATUS", 0),
     ]
 
     checks = [

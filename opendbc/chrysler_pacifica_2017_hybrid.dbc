@@ -101,7 +101,7 @@ BO_ 264 ACCEL_PEDAL_MSG: 8 XXX
  SG_ ACCEL_PEDAL : 35|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 464 SEATBELT_STATUS: 8 XXX
- SG_ SEATBELT_DRIVER_UNLATCHED : 13|1@0+ (1,0) [0|1] "" XXX
+ SG_ SEATBELT_DRIVER : 13|3@0+ (1,0) [0|0] "" XXX
 
 BO_ 544 EPS_STATUS: 8 XXX
  SG_ LKAS_STATE : 23|4@0+ (1,0) [0|15] "" XXX
@@ -429,5 +429,7 @@ CM_ SG_ 625 SPEED "zero on non-acc drives";
 CM_ SG_ 625 ACCEL_PERHAPS "set to 7767 on non-ACC drives. ACC drive 40k is constant speed, 42k is accelerating";
 CM_ SG_ 268 BRAKE_PERHAPS "triggers only on ACC braking";
 CM_ SG_ 384 NEW_SIGNAL_1 "set in ACC gas driving. not set in electric human. not sure about gas human driving.";
+CM_ SG_ 464 SEATBELT_DRIVER "0 or 3 means buckled, 1 or 2 means unbuckled.  7 means signal not available."
+
 VAL_ 746 PRNDL 5 "L" 4 "D" 3 "N" 2 "R" 1 "P" ;
 VAL_ 792 TURN_SIGNALS 2 "Right" 1 "Left" ;
