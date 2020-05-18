@@ -1,3 +1,8 @@
+2020-05-18 (0.7.5)
+========================
+* 修正因同時使用「社群功能」和「自定車型」造成的加減速問題。(特別感謝 @Wei、@Sky Chang、@Han9365、@鄧育林 的測試以及回報。)
+* Fixed acceleration issue caused by used of both "Community Maintain Feature" and "Custom Car Model"
+
 2020-05-16 (0.7.5)
 ========================
 * 新增 DragonMaxSpeedLimit 設定值 (mph)，當如果車速高於此值 op 將會停止操控。(感謝 @Anthony 建議)

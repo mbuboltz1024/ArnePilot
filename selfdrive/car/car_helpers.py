@@ -75,10 +75,15 @@ def only_toyota_left(candidate_cars):
 # **** for use live only ****
 def fingerprint(logcan, sendcan, has_relay):
   fixed_fingerprint = os.environ.get('FINGERPRINT', "")
+  # dp
   dragon_car_model = Params().get("DragonCustomModel", encoding="utf8")
   has_dragon_car_model = True if len(dragon_car_model) else False
+  # when dragon_car_model is set, we do not need to scan relay,
+  # however we still need to do FPv1 to collect available can msgs
+  # for other purposes.
+  has_relay = False if has_dragon_car_model else has_relay
 
-  if not has_dragon_car_model and has_relay and not fixed_fingerprint:
+  if has_relay and not fixed_fingerprint:
     # Vin query only reliably works thorugh OBDII
     bus = 1
 
@@ -110,7 +115,7 @@ def fingerprint(logcan, sendcan, has_relay):
   frame = 0
   frame_fingerprint = 10  # 0.1s
   car_fingerprint = None
-  done = True if has_dragon_car_model else False
+  done = False
 
   while not done:
     a = messaging.get_one_can(logcan)
