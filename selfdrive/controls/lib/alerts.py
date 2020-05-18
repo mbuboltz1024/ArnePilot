@@ -829,22 +829,22 @@ ALERTS = [
   # dp
   Alert(
       "preLaneChangeLeftALC",
-      _("Left ALC will engage in 3 seconds"),
-      _("Monitor Traffic"),
+      _("Switching to Left Lane"),
+      _("Ensure Lane is Clear"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1, alert_rate=0.75),
 
   Alert(
       "preLaneChangeRightALC",
-      _("Right ALC will engage in 3 seconds"),
-      _("Monitor Traffic"),
+      _("Switching to Right Lane"),
+      _("Ensure Lane is Clear"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1, alert_rate=0.75),
 
   Alert(
       "laneChangeALC",
-      _("Changing Lane"),
-      _("Monitor Traffic"),
+      _("Switching Lanes"),
+      _("Check Your Surroundings"),
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimeWarning2, .1, .1, .1),
 

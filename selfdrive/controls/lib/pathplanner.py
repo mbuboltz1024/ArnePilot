@@ -72,7 +72,7 @@ class PathPlanner():
     self.dragon_auto_lc_timer = None
     self.dragon_assisted_lc_min_mph = LANE_CHANGE_SPEED_MIN
     self.dragon_auto_lc_min_mph = 60 * CV.MPH_TO_MS
-    self.dragon_auto_lc_delay = 2.
+    self.dragon_auto_lc_delay = .75
     self.last_ts = 0.
     self.dp_last_modified = None
     self.dp_enable_sr_boost = False
