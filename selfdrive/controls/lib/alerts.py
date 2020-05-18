@@ -23,7 +23,7 @@ class Alert():
                alert_type,
                alert_text_1,
                alert_text_2,
-               alert_status,
+               alert_status,x
                alert_size,
                alert_priority,
                visual_alert,
@@ -170,10 +170,10 @@ ALERTS = [
 
   Alert(
       "startup",
-      _("¡Be ready to take over at any time!"),
-      _("Mopar or no car!"),
+      _("Always Drive Autonomously Responsibly."),
+      _("MoparPilot"),
       AlertStatus.userPrompt, AlertSize.full,
-      Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, 0., 0., 15.),
+      Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, 0., 0., 5.),
 
   Alert(
       "startupMaster",
