@@ -23,7 +23,7 @@ class Alert():
                alert_type,
                alert_text_1,
                alert_text_2,
-               alert_status,x
+               alert_status,
                alert_size,
                alert_priority,
                visual_alert,
