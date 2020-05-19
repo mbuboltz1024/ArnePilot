@@ -1,3 +1,8 @@
+2020-05-19 (0.7.5)
+========================
+* 加入 DragonEnableAutoUpdate 預設值。
+* Added DragonEnableAutoUpdate default value.
+
 2020-05-18 (0.7.5)
 ========================
 * 修正因同時使用「社群功能」和「自定車型」造成的加減速問題。(特別感謝 @Wei、@Sky Chang、@Han9365、@鄧育林 的測試以及回報。)

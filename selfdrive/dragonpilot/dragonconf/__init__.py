@@ -82,6 +82,7 @@ default_conf = {
   'DragonSteerBoostMaxAt': '15.0',
   'DragonDashcamHours': '24.0',
   'DragonUIScreenOffDriving': '0',
+  'DragonEnableAutoUpdate': '1',
   'DragonUIBrightness': '0',
   'DragonDashcamImpactDetect': '0',
   'DragonDashcamImpactDetectStarted': '0',

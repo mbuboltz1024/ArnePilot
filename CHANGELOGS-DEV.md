@@ -1,4 +1,25 @@
-2020-05-10 (dp 0.7.5 v2)
+dragonpilot 0.7.5.1
+========================
+* 修正因同時使用「社群功能」和「自定車型」造成的加減速問題。(特別感謝 @Wei、@Sky Chang、@Han9365、@鄧育林 的測試以及回報。)
+* Fixed acceleration issue caused by used of both "Community Maintain Feature" and "Custom Car Model". (Special Thanks to @Wei, @Sky Chang, @Han9365, @鄧育林)
+* 新增 DragonMaxSpeedLimit 設定值 (mph)，當如果車速高於此值 op 將會停止操控。(感謝 @Anthony 建議)
+* Added DragonMaxSpeedLimit parameter (mph), op will stop controlling when car speed is high than the value. (Thanks to @Anthony)
+* 更新 appd 使用 cnpmjs 來下載 APKs。
+* Updated appd to use cnpmjs to download APKs.
+* 修正更新服務。(感謝 @Wei)
+* Fixed Update Service. (Thanks to @Wei)
+* 新增加拿大版 2018 Toyota Sienna LTD 指紋(v2)。(感謝 明峰 提供)
+* Added Canada 2018 Toyota Sienna LTD fingerprint (v2). (Thanks to 明峰)
+* 新增「通過移動網路上傳」開關
+* Added Upload Over Mobile Network toggle.
+* 新增「通過熱點上傳」開關
+* Added Upload Over Hotspot toggle.
+* 新增加拿大版 2018 Toyota Sienna LTD 指紋(v1)。(感謝 明峰 提供)
+* Added Canada 2018 Toyota Sienna LTD fingerprint (v1). (Thanks to 明峰)
+* 新增大陸版 Volkswagen Golf GTI 指紋 (v1)。(感謝 easyeiji 提供)
+* Added China Volkswagen Golf GTI fingerprint (v1). (Thanks to easyeiji)
+
+dragonpilot 0.7.5.0
 ========================
 * 基於最新 openpilot 0.7.5 devel-staging.
 * Based on latest openpilot 0.7.5 devel-staging.
