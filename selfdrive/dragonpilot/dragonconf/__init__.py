@@ -89,6 +89,8 @@ default_conf = {
   'DragonEnableUploadOnMobile': '0',
   'DragonEnableUploadOnHotspot': '0',
   'DragonMaxSpeedLimit': '92',
+  'DragonEnableRating': '1',
+  'DragonEnableContALC' : '0',
 }
 
 deprecated_conf = {

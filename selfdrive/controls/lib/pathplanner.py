@@ -76,6 +76,8 @@ class PathPlanner():
     self.last_ts = 0.
     self.dp_last_modified = None
     self.dp_enable_sr_boost = False
+    self.dp_continuous_auto_lc = False
+    self.dp_did_auto_lc = False
 
     self.dp_steer_ratio = 0.
     self.dp_sr_boost_bp = None
@@ -115,6 +117,7 @@ class PathPlanner():
           if self.dragon_assisted_lc_min_mph < 0:
             self.dragon_assisted_lc_min_mph = 0
           if self.dragon_auto_lc_enabled:
+            self.dp_continuous_auto_lc = True if self.params.get("DragonEnableContALC", encoding='utf8') == "1" else False
             # adjustable auto lc min speed
             try:
               self.dragon_auto_lc_min_mph = float(self.params.get("DragonAutoLCMinMPH", encoding='utf8'))
@@ -194,7 +197,16 @@ class PathPlanner():
       if not below_lane_change_speed and self.dragon_auto_lc_enabled and v_ego >= self.dragon_auto_lc_min_mph:
         # we allow auto lc when speed reached dragon_auto_lc_min_mph
         self.dragon_auto_lc_allowed = True
+      else:
+        # if too slow, we reset all the variables
+        self.dragon_auto_lc_allowed = False
+        self.dragon_auto_lc_timer = None
 
+      # disable auto lc when continuous is off and already did auto lc once
+      if self.dragon_auto_lc_allowed and not self.dp_continuous_auto_lc and self.dp_did_auto_lc:
+        self.dragon_auto_lc_allowed = False
+
+      if self.dragon_auto_lc_allowed:
         if self.dragon_auto_lc_timer is None:
           # we only set timer when in preLaneChange state, dragon_auto_lc_delay delay
           if self.lane_change_state == LaneChangeState.preLaneChange:
@@ -202,10 +214,7 @@ class PathPlanner():
         elif cur_time >= self.dragon_auto_lc_timer:
           # if timer is up, we set torque_applied to True to fake user input
           torque_applied = True
-      else:
-        # if too slow, we reset all the variables
-        self.dragon_auto_lc_allowed = False
-        self.dragon_auto_lc_timer = None
+          self.dp_did_auto_lc = True
 
       # we reset the timers when torque is applied regardless
       if torque_applied:
@@ -248,6 +257,9 @@ class PathPlanner():
       self.lane_change_timer = 0.0
     else:
       self.lane_change_timer += DT_MDL
+
+    if self.prev_one_blinker and not one_blinker:
+      self.dp_did_auto_lc = False
 
     self.prev_one_blinker = one_blinker
 

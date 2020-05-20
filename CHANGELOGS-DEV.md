@@ -1,3 +1,12 @@
+dragonpilot 0.7.5.2
+========================
+* 加入「允許多次自動換道」功能。(感謝 @阿濤 建議)
+* Added "Allow Continuous Auto Lane Change" Toggle. (Thanks to @阿濤)
+* 修正開機後設定頁面有時會錯誤的問題。(感謝 @salmankhan、@Wei 回報)
+* Fixed setting page crash issue. (Thanks to @salmankhan, @Wei)
+* 修正熄火後一直出現更新訊息的錯誤。(感謝 @Sky Chang 回報)
+* Fixed issue that keep showing update prompt. (Thanks to @Sky Chang)
+
 dragonpilot 0.7.5.1
 ========================
 * 修正因同時使用「社群功能」和「自定車型」造成的加減速問題。(特別感謝 @Wei、@Sky Chang、@Han9365、@鄧育林 的測試以及回報。)

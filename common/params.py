@@ -198,6 +198,8 @@ keys = {
   "DragonEnableUploadOnMobile": [TxType.PERSISTENT],
   "DragonEnableUploadOnHotspot": [TxType.PERSISTENT],
   "DragonMaxSpeedLimit": [TxType.PERSISTENT],
+  "DragonEnableRating": [TxType.PERSISTENT],
+  "DragonEnableContALC": [TxType.PERSISTENT],
 }
 
 

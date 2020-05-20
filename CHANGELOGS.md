@@ -1,3 +1,12 @@
+2020-05-20 (0.7.5)
+========================
+* 加入「允許多次自動換道」功能。(感謝 @阿濤 建議)
+* Added "Allow Continuous Auto Lane Change" Toggle. (Thanks to @阿濤)
+* 修正開機後設定頁面有時會錯誤的問題。(感謝 @salmankhan、@Wei 回報)
+* Fixed setting page crash issue. (Thanks to @salmankhan, @Wei)
+* 修正熄火後一直出現更新訊息的錯誤。(感謝 @Sky Chang 回報)
+* Fixed issue that keep showing update prompt. (Thanks to @Sky Chang)
+
 2020-05-19 (0.7.5)
 ========================
 * 加入 DragonEnableAutoUpdate 預設值。
