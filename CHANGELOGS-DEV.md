@@ -1,5 +1,15 @@
 dragonpilot 0.7.5.2
 ========================
+* 修改成 3 小時後停止供電。(感謝 @Wei 建議)
+* Updated to stop charging after 3 hrs. (Thanks to @Wei)
+* 移除行車記錄下的「碰撞偵測」功能。
+* Removed Impact Detection in Dashcam.
+* 修正開啟「Noctua 風扇」模式導致的錯誤。(感謝 @阿濤 回報)
+* Fixed a bug caused by enabling "Noctua Mod". (Thanks to @阿濤)
+* 修正「位智模式」無法顯示警示的問題。(感謝 @axandres 回報)
+* Fixed alert issue in waze mode. (Thanks to @axandres)
+* 修正無法顯示更新中圖示的問題。
+* Fixed unable to display "UPDATING" icon issue. 
 * 加入「允許多次自動換道」功能。(感謝 @阿濤 建議)
 * Added "Allow Continuous Auto Lane Change" Toggle. (Thanks to @阿濤)
 * 修正開機後設定頁面有時會錯誤的問題。(感謝 @salmankhan、@Wei 回報)

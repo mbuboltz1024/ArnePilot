@@ -43,7 +43,7 @@ static void set_awake(UIState *s, bool awake) {
 #ifdef QCOM
   if (awake) {
     // 30 second timeout at 30 fps
-    s->awake_timeout = s->dragon_dashcam_impact_detect_started? 60*30 : (s->dragon_ui_screen_off_driving && s->started)? 10*30 : 30*30;
+    s->awake_timeout = (s->dragon_ui_screen_off_driving && s->started)? 10*30 : 30*30;
   }
   if (s->awake != awake) {
     s->awake = awake;
@@ -398,7 +398,6 @@ static void ui_init_vision(UIState *s, const VisionStreamBufs back_bufs,
   read_param_bool(&s->dragon_ui_screen_off_reversing, "DragonUIScreenOffReversing");
   read_param_bool(&s->dragon_ui_screen_off_driving, "DragonUIScreenOffDriving");
   read_param_uint64(&s->dragon_ui_brightness, "DragonUIBrightness");
-  read_param_bool(&s->dragon_dashcam_impact_detect_started, "DragonDashcamImpactDetectStarted");
 
   if (s->dragon_waze_mode) {
     s->dragon_ui_speed = false;
@@ -443,7 +442,6 @@ static void ui_init_vision(UIState *s, const VisionStreamBufs back_bufs,
   // dp
   s->dragon_last_modified_timeout = UI_FREQ / 4;
   s->dragon_updating_timeout = UI_FREQ / 5;
-  s->dragon_dashcam_impact_detect_started_timeout = UI_FREQ / 6;
 }
 
 static PathData read_path(cereal::ModelData::PathData::Reader pathp) {
@@ -653,6 +651,7 @@ void handle_message(UIState *s,  Message* msg) {
   // Handle onroad/offroad transition
   if (!s->started) {
     if (s->status != STATUS_STOPPED) {
+      framebuffer_swap_layer(s->fb, 0);
       update_status(s, STATUS_STOPPED);
       s->alert_sound_timeout = 0;
       s->vision_seen = false;
@@ -764,6 +763,10 @@ static void ui_update(UIState *s) {
 
     s->alert_blinking_alpha = 1.0;
     s->alert_blinked = false;
+
+    if (s->dragon_waze_mode) {
+      framebuffer_swap_layer(s->fb, 0x00010000);
+    }
   }
 
   zmq_pollitem_t polls[1] = {{0}};
@@ -1083,7 +1086,7 @@ int main(int argc, char* argv[]) {
     s->scene.ui_viz_rw = hasSidebar ? box_w : (box_w + sbr_w - (bdr_s * 2));
     s->scene.ui_viz_ro = hasSidebar ? -(sbr_w - 6 * bdr_s) : 0;
 
-    if (s->vision_connected && s->dragon_waze_mode) {
+    if (s->started && s->dragon_waze_mode) {
       // always collapsed sidebar when vision is connect and in waze mode
       s->scene.uilayout_sidebarcollapsed = true;
     } else {
@@ -1211,7 +1214,6 @@ int main(int argc, char* argv[]) {
     // dp
     read_param_bool_timeout(&s->dragon_updating, "DragonUpdating", &s->dragon_updating_timeout);
     read_param_string_timeout(s->dragon_last_modified, "DragonLastModified", &s->dragon_last_modified_timeout);
-    read_param_bool_timeout(&s->dragon_dashcam_impact_detect_started, "DragonDashcamImpactDetectStarted", &s->dragon_dashcam_impact_detect_started_timeout);
     if (strcmp(last_modified, s->dragon_last_modified) != 0) {
       strncpy(last_modified, s->dragon_last_modified, sizeof(last_modified));
 

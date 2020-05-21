@@ -20,8 +20,6 @@ static void ui_draw_sidebar_home_button(UIState *s) {
   bool homeActive = s->active_app == cereal::UiLayoutState::App::HOME;
   const int home_btn_xr = !s->scene.uilayout_sidebarcollapsed ? home_btn_x : -(sbr_w);
 
-  ui_draw_image(s->vg, home_btn_xr, home_btn_y, home_btn_w, home_btn_h, s->img_button_home, homeActive ? 1.0f : 0.65f);
-
   if (s->dragon_updating) {
     nvgBeginPath(s->vg);
     nvgCircle(s->vg, home_btn_xr + home_btn_w/2, home_btn_y + home_btn_h/2, 90);
@@ -38,9 +36,11 @@ static void ui_draw_sidebar_home_button(UIState *s) {
 
     s->scene.alert_rate += 5*s->scene.alert_type;
 
-    if (s->scene.alert_rate == 0 || s->scene.alert_rate == 255) {
+    if (s->scene.alert_rate <= 0 || s->scene.alert_rate >= 255) {
       s->scene.alert_type *= -1;
     }
+  } else {
+    ui_draw_image(s->vg, home_btn_xr, home_btn_y, home_btn_w, home_btn_h, s->img_button_home, homeActive ? 1.0f : 0.65f);
   }
 }
 

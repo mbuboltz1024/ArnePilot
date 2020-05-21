@@ -18,7 +18,6 @@ params = Params()
 from common.realtime import sec_since_boot, DT_TRML
 from common.dp import get_last_modified
 import collections
-import math
 
 dashcam_videos_path = '/sdcard/dashcam/'
 dashcam_duration = 60 # max is 180
@@ -51,36 +50,23 @@ def main(gctx=None):
     retry += 1
     time.sleep(5)
 
-  idlecam_enabled = False
   health_timeout = int(1000 * 2.5 * DT_TRML)  # 2.5x the expected health frequency
   health_sock = messaging.sub_sock('health', timeout=health_timeout)
-  sensor_sock = messaging.sub_sock('sensorEvents')
-  samples = collections.deque([])
-  start_ts = None
-  last_started = False
-
 
   dragon_dashcam_hours = 24. * 60 * 60
   max_storage = (max_size_per_file/dashcam_duration) * dragon_dashcam_hours
   dashcam_enabled = False
   last_ts = 0.
   last_modified = None
-  sleep = 5
 
   thermal_sock = messaging.sub_sock('thermal')
-  params.put("DragonDashcamImpactDetectStarted", "0")
   while dashcam_allowed:
-    type = TYPE_DRIVING
     duration = dashcam_duration
     ts = sec_since_boot()
     if ts - last_ts >= 5.:
       modified = get_last_modified()
       if last_modified != modified:
         dashcam_enabled = True if params.get("DragonEnableDashcam", encoding='utf8') == "1" else False
-        if dashcam_enabled:
-          idlecam_enabled = True if params.get("DragonDashcamImpactDetect", encoding='utf8') == "1" else False
-        else:
-          idlecam_enabled = False
         try:
           dragon_dashcam_hours = float(params.get("DragonDashcamHours", encoding='utf8')) * 60 * 60
         except (TypeError, ValueError):
@@ -92,51 +78,11 @@ def main(gctx=None):
 
     health = messaging.recv_sock(health_sock, wait=False)
     started = True if health is not None and (health.health.ignitionLine or health.health.ignitionCan) else False
-    record_started = False
 
-    if last_started != started:
-      params.put("DragonDashcamImpactDetectStarted", "0")
-      samples.clear()
-
-    if started:
-      sleep = 5
-      if dashcam_enabled:
-        record_started = True
-    else:
-      if idlecam_enabled:
-        sleep = 0.02
-        sensor = messaging.recv_sock(sensor_sock, wait=False)
-        if sensor is not None:
-          for event in sensor.sensorEvents:
-            # accelerometer
-            if event.type == 1:
-              acc_x = event.acceleration.v[0]
-              acc_y = event.acceleration.v[1]
-              acc_z = event.acceleration.v[2]
-              g = math.sqrt(acc_x*acc_x+acc_y*acc_y+acc_z*acc_z)
-              val = round(9.8-g,2)
-              if len(samples) >= 250:
-                avg_sample = round(sum(samples)/len(samples),2)
-                if start_ts is None and abs(val - avg_sample) >= 0.3:
-                  duration = shock_duration
-                  type = TYPE_SHOCK
-                  start_ts = ts
-                  record_started = True
-                  params.put("DragonDashcamImpactDetectStarted", "1")
-                samples.pop()
-              samples.appendleft(val)
-        if start_ts is not None and ts - start_ts >= shock_duration-1:
-          start_ts = None
-          record_started = False
-          params.put("DragonDashcamImpactDetectStarted", "0")
-
-    last_started = started
-
-    if record_started:
+    if started and dashcam_enabled:
       now = datetime.datetime.now()
       file_name = now.strftime("%Y-%m-%d_%H-%M-%S")
-      postfix = '_impact' if type == TYPE_SHOCK else ''
-      os.system("screenrecord --bit-rate %s --time-limit %s %s%s%s.mp4 &" % (bit_rates, duration, dashcam_videos_path, file_name, postfix))
+      os.system("screenrecord --bit-rate %s --time-limit %s %s%s.mp4 &" % (bit_rates, duration, dashcam_videos_path, file_name))
       start_time = time.time()
       try:
         used_spaces = get_used_spaces()
@@ -167,7 +113,7 @@ def main(gctx=None):
       if sleep_time >= 0.:
         time.sleep(sleep_time)
     else:
-      time.sleep(sleep)
+      time.sleep(5)
 
 def get_used_spaces():
   return sum(os.path.getsize(dashcam_videos_path + f) for f in os.listdir(dashcam_videos_path) if os.path.isfile(dashcam_videos_path + f))

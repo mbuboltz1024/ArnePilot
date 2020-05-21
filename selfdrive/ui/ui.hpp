@@ -330,7 +330,6 @@ typedef struct UIState {
   SubSocket *carstate_sock;
   int dragon_updating_timeout;
   int dragon_last_modified_timeout;
-  int dragon_dashcam_impact_detect_started_timeout;
 
   bool dragon_ui_speed;
   bool dragon_ui_event;
@@ -356,7 +355,6 @@ typedef struct UIState {
   char dragon_last_modified[20];
   bool dragon_ui_screen_off_driving;
   uint64_t dragon_ui_brightness;
-  bool dragon_dashcam_impact_detect_started;
 } UIState;
 
 // API

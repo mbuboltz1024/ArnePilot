@@ -237,7 +237,7 @@ def thermald_thread():
     location = location.gpsLocation if location else None
     msg = read_thermal()
 
-    if params.get('DragonNoctuaMode', encoding='utf8') == "1":
+    if handle_fan is None and params.get('DragonNoctuaMode', encoding='utf8') == "1":
       setup_eon_fan()
       handle_fan = handle_fan_eon
 
@@ -273,9 +273,6 @@ def thermald_thread():
           health_prev.health.hwType != log.HealthData.HwType.unknown:
           params.panda_disconnect()
       health_prev = health
-
-      if not ignition and params.get("DragonDashcamImpactDetectStarted", encoding='utf8') == "1":
-        ignition = True
 
     # get_network_type is an expensive call. update every 10s
     if (count % int(10. / DT_TRML)) == 0:
@@ -350,7 +347,7 @@ def thermald_thread():
       thermal_status = ThermalStatus.green
 
     if not dp_temp_monitor:
-      thermal_status = ThermalStatus.green
+      thermal_status = ThermalStatus.yellow
 
     # **** starting logic ****
     time_valid = True

@@ -840,7 +840,7 @@ static void ui_draw_infobar(UIState *s) {
 
   nvgBeginPath(s->vg);
   nvgRect(s->vg, rect_x, rect_y, rect_w, rect_h);
-  nvgFillColor(s->vg, COLOR_BLACK_ALPHA(100));
+  nvgFillColor(s->vg, COLOR_BLACK_ALPHA(s->dragon_waze_mode? 150 : 100));
   nvgFill(s->vg);
 
   nvgFontSize(s->vg, hasSidebar? 35:42);
@@ -1175,8 +1175,11 @@ static void ui_draw_background(UIState *s) {
   int bg_status = s->status;
   assert(bg_status < ARRAYSIZE(bg_colors));
   const uint8_t *color = bg_colors[bg_status];
-
-  glClearColor(color[0]/256.0, color[1]/256.0, color[2]/256.0, 1.0);
+  if (s->vision_seen && s->dragon_waze_mode) {
+    glClearColor(0, 0, 0, 0);
+  } else {
+    glClearColor(color[0]/256.0, color[1]/256.0, color[2]/256.0, 1.0);
+  }
   glClear(GL_STENCIL_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
 
@@ -1187,7 +1190,9 @@ void ui_draw(UIState *s) {
   glViewport(0, 0, s->fb_w, s->fb_h);
   nvgBeginFrame(s->vg, s->fb_w, s->fb_h, 1.0f);
   ui_draw_sidebar(s);
-  if (s->started && s->active_app == cereal::UiLayoutState::App::NONE && s->status != STATUS_STOPPED && s->vision_seen) {
+  if (s->vision_seen && s->dragon_waze_mode) {
+    ui_draw_vision(s);
+  } else if (s->started && s->active_app == cereal::UiLayoutState::App::NONE && s->status != STATUS_STOPPED && s->vision_seen) {
       ui_draw_vision(s);
   } 
   nvgEndFrame(s->vg);

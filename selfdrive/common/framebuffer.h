@@ -13,6 +13,7 @@ FramebufferState* framebuffer_init(
 
 void framebuffer_set_power(FramebufferState *s, int mode);
 void framebuffer_swap(FramebufferState *s);
+void framebuffer_swap_layer(FramebufferState *s, int32_t layer);
 
 /* Display power modes */
 enum {

@@ -442,9 +442,6 @@ def manager_thread():
 
   if params.get("DragonEnableDashcam", encoding='utf8') == "1":
     persistent_processes.append('dashcamd')
-    if params.get("DragonDashcamImpactDetect", encoding='utf8') == "1":
-      car_started_processes.remove('sensord')
-      persistent_processes.append('sensord')
 
   # start daemon processes
   for p in daemon_processes:
