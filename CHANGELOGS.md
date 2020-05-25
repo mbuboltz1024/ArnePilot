@@ -1,3 +1,8 @@
+2020-05-25 (0.7.5)
+========================
+* 加入對 VW MQB/PQ 的支援。(感謝 @dingliangxue 移植)
+* Added support to VW MQB/PQ platform. (Thanks to @dingliangxue)
+
 2020-05-21 (0.7.5)
 ========================
 * 修改成 3 小時後停止供電。(感謝 @Wei 建議)

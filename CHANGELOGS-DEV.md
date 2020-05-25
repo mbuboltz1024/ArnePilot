@@ -1,5 +1,7 @@
 dragonpilot 0.7.5.2
 ========================
+* 加入對 VW MQB/PQ 的支援。(感謝 @dingliangxue 移植)
+* Added support to VW MQB/PQ platform. (Thanks to @dingliangxue)
 * 修改成 3 小時後停止供電。(感謝 @Wei 建議)
 * Updated to stop charging after 3 hrs. (Thanks to @Wei)
 * 移除行車記錄下的「碰撞偵測」功能。
