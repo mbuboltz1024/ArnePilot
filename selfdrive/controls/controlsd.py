@@ -97,8 +97,8 @@ def data_sample(CI, CC, sm, can_sock, state, mismatch_counter, can_error_counter
   mem_low = sm['thermal'].memUsedPercent > 90
 
   # Create events for battery, temperature and disk space
-  if low_battery:
-    events.append(create_event('lowBattery', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
+  #if low_battery:
+  #  events.append(create_event('lowBattery', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
   if overtemp:
     events.append(create_event('overheat', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
   if free_space:
