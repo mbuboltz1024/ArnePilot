@@ -1,3 +1,14 @@
+2020-05-26 (0.7.5)
+========================
+* 將剎車狀熊顯示於 dp 資訊欄。
+* Added brake indicator to dp infobar.
+* 修正「溫度監控」燈示。
+* Fixed "Temp monitor" indicator.
+* 加入「方向燈取消控制」延遲控制設。(感謝 @wabes 建議)
+* Added delay config to "Disable Lat Control on Blinker". (Thanks to @wabes)
+* 加入巴西版 2020 Corolla Hybrid 指紋v2。(感謝 @berno22 提供)
+* Added Brazil 2020 Corolla Hybrid FPv2. (Thanks to @berno22) 
+
 2020-05-25 (0.7.5)
 ========================
 * 加入對 VW MQB/PQ 的支援。(感謝 @dingliangxue 移植)

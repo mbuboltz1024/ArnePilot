@@ -198,6 +198,7 @@ keys = {
   "DragonMaxSpeedLimit": [TxType.PERSISTENT],
   "DragonEnableRating": [TxType.PERSISTENT],
   "DragonEnableContALC": [TxType.PERSISTENT],
+  "DragonBlinkerOffTimer": [TxType.PERSISTENT],
 }
 
 

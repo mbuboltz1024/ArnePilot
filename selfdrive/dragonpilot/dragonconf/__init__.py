@@ -89,6 +89,7 @@ default_conf = {
   'DragonMaxSpeedLimit': '92',
   'DragonEnableRating': '1',
   'DragonEnableContALC' : '0',
+  'DragonBlinkerOffTimer': '0',
 }
 
 deprecated_conf = {

@@ -840,7 +840,7 @@ static void ui_draw_infobar(UIState *s) {
 
   nvgBeginPath(s->vg);
   nvgRect(s->vg, rect_x, rect_y, rect_w, rect_h);
-  nvgFillColor(s->vg, COLOR_BLACK_ALPHA(s->dragon_waze_mode? 150 : 100));
+  nvgFillColor(s->vg, (s->scene.brakeLights? COLOR_RED_ALPHA(s->dragon_waze_mode? 150 : 100) : COLOR_BLACK_ALPHA(s->dragon_waze_mode? 150 : 100)));
   nvgFill(s->vg);
 
   nvgFontSize(s->vg, hasSidebar? 35:42);

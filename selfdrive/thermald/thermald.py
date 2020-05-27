@@ -346,7 +346,7 @@ def thermald_thread():
       # all good
       thermal_status = ThermalStatus.green
 
-    if not dp_temp_monitor:
+    if not dp_temp_monitor and thermal_status in [ThermalStatus.yellow, ThermalStatus.red, ThermalStatus.danger]:
       thermal_status = ThermalStatus.yellow
 
     # **** starting logic ****

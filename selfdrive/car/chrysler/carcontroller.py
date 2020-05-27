@@ -3,6 +3,11 @@ from selfdrive.car.chrysler.chryslercan import create_lkas_hud, create_lkas_comm
                                                create_wheel_buttons
 from selfdrive.car.chrysler.values import CAR, SteerLimitParams
 from opendbc.can.packer import CANPacker
+# dp
+from common.params import Params
+params = Params()
+from common.dp import get_last_modified
+from common.dp import common_controller_update, common_controller_ctrl
 
 class CarController():
   def __init__(self, dbc_name, CP, VM):
@@ -17,12 +22,30 @@ class CarController():
 
     self.packer = CANPacker(dbc_name)
 
+    # dp
+    self.dragon_enable_steering_on_signal = False
+    self.dragon_lat_ctrl = True
+    self.dp_last_modified = None
+    self.lane_change_enabled = True
+    self.last_blinker_on = False
+    self.blinker_end_frame = 0
+    self.dragon_blinker_off_timer = 0.
 
   def update(self, enabled, CS, actuators, pcm_cancel_cmd, hud_alert):
     # this seems needed to avoid steering faults and to force the sync with the EPS counter
     frame = CS.lkas_counter
     if self.prev_frame == frame:
       return []
+
+    # dp
+    if frame % 500 == 0:
+      modified = get_last_modified()
+      if self.dp_last_modified != modified:
+        self.dragon_lat_ctrl, \
+        self.lane_change_enabled, \
+        self.dragon_enable_steering_on_signal, \
+        self.dragon_blinker_off_timer = common_controller_update(self.lane_change_enabled)
+        self.dp_last_modified = modified
 
     # *** compute control surfaces ***
     # steer torque
@@ -41,6 +64,19 @@ class CarController():
 
     if not lkas_active:
       apply_steer = 0
+
+    # dp
+    blinker_on = CS.out.leftBlinker or CS.out.rightBlinker
+    if not enabled:
+      self.blinker_end_frame = 0
+    if self.last_blinker_on and not blinker_on:
+      self.blinker_end_frame = frame + self.dragon_blinker_off_timer
+    apply_steer = common_controller_ctrl(enabled,
+                                         self.dragon_lat_ctrl,
+                                         self.dragon_enable_steering_on_signal,
+                                         blinker_on or frame < self.blinker_end_frame,
+                                         apply_steer)
+    self.last_blinker_on = blinker_on
 
     self.apply_steer_last = apply_steer
 

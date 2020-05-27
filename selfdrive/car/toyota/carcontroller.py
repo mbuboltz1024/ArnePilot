@@ -57,6 +57,9 @@ class CarController():
     self.dragon_toyota_sng_mod = False
     self.dp_last_modified = None
     self.lane_change_enabled = True
+    self.last_blinker_on = False
+    self.blinker_end_frame = 0
+    self.dragon_blinker_off_timer = 0.
 
   def update(self, enabled, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
              left_line, right_line, lead, left_lane_depart, right_lane_depart):
@@ -70,7 +73,8 @@ class CarController():
 
         self.dragon_lat_ctrl, \
         self.lane_change_enabled, \
-        self.dragon_enable_steering_on_signal = common_controller_update(self.lane_change_enabled)
+        self.dragon_enable_steering_on_signal, \
+        self.dragon_blinker_off_timer = common_controller_update(self.lane_change_enabled)
 
         self.dp_last_modified = modified
 
@@ -122,12 +126,17 @@ class CarController():
     self.last_standstill = CS.out.standstill
 
     # dp
+    blinker_on = CS.out.leftBlinker or CS.out.rightBlinker
+    if not enabled:
+      self.blinker_end_frame = 0
+    if self.last_blinker_on and not blinker_on:
+      self.blinker_end_frame = frame + self.dragon_blinker_off_timer
     apply_steer_req = common_controller_ctrl(enabled,
                                              self.dragon_lat_ctrl,
                                              self.dragon_enable_steering_on_signal,
-                                             CS.out.leftBlinker,
-                                             CS.out.rightBlinker,
+                                             blinker_on or frame < self.blinker_end_frame,
                                              apply_steer_req)
+    self.last_blinker_on = blinker_on
 
     can_sends = []
 
