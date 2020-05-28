@@ -1,5 +1,9 @@
 dragonpilot 0.7.5.3
 ========================
+* 優化 Lexus GSH 轉向。(感謝 @簡銘佑 測試)
+* Optimize Lexus GSH steering. (Thanks to @簡銘佑)
+* C2 支援自動關機「DragonAutoShutdownAt」參數。(感謝 @cgw1968 建議)
+* C2 to support auto shutdown "DragonAutoShutDownAt" param. (Thanks to @cgw1968)
 * 修正出現「pedalPressed」的錯誤。(感謝 @Wei 回報)
 * Fixed issue showing "pedalPressed" error. (Thanks to @Wei) 
 * 將剎車狀熊顯示於 dp 資訊欄。

@@ -245,7 +245,7 @@ class CarInterface(CarInterfaceBase):
 
     elif candidate == CAR.LEXUS_GSH:
       stop_and_go = True # set to true because it's a hybrid
-      ret.safetyParam = 77
+      ret.safetyParam = 130
       ret.wheelbase = 2.84988
       ret.steerRatio = 13.3
       tire_stiffness_factor = 0.444

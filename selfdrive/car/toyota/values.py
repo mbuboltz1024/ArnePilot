@@ -956,8 +956,8 @@ DBC = {
   CAR.LEXUS_CTH: dbc_dict('lexus_ct200h_2018_pt_generated', 'toyota_adas'),
   CAR.RAV4H_TSS2: dbc_dict('toyota_nodsu_hybrid_pt_generated', 'toyota_tss2_adas'),
   CAR.LEXUS_NXH: dbc_dict('lexus_nx300h_2018_pt_generated', 'toyota_adas'),
-  CAR.LEXUS_ISH: dbc_dict('lexus_is_2018_pt_generated', 'toyota_adas'),
-  CAR.LEXUS_GSH: dbc_dict('lexus_is_2018_pt_generated', 'toyota_adas'),
+  CAR.LEXUS_ISH: dbc_dict('lexus_is300h_2017_pt_generated', 'toyota_adas'),
+  CAR.LEXUS_GSH: dbc_dict('lexus_is300h_2017_pt_generated', 'toyota_adas'),
   CAR.LEXUS_NXT: dbc_dict('lexus_nxt_2015_pt_generated', 'toyota_adas'),
 }
 

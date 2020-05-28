@@ -56,7 +56,6 @@ class CarController():
     self.dragon_lane_departure_warning = True
     self.dragon_toyota_sng_mod = False
     self.dp_last_modified = None
-    self.lane_change_enabled = True
     self.last_blinker_on = False
     self.blinker_end_frame = 0
     self.dragon_blinker_off_timer = 0.
@@ -72,9 +71,8 @@ class CarController():
         self.dragon_toyota_sng_mod = True if params.get("DragonToyotaSnGMod", encoding='utf8') == "1" else False
 
         self.dragon_lat_ctrl, \
-        self.lane_change_enabled, \
         self.dragon_enable_steering_on_signal, \
-        self.dragon_blinker_off_timer = common_controller_update(self.lane_change_enabled)
+        self.dragon_blinker_off_timer = common_controller_update()
 
         self.dp_last_modified = modified
 
