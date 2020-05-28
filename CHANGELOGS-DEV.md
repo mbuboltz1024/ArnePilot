@@ -1,5 +1,7 @@
 dragonpilot 0.7.5.3
 ========================
+* 修正出現「pedalPressed」的錯誤。(感謝 @Wei 回報)
+* Fixed issue showing "pedalPressed" error. (Thanks to @Wei) 
 * 將剎車狀熊顯示於 dp 資訊欄。
 * Added brake indicator to dp infobar.
 * 修正「溫度監控」燈示。

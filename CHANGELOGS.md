@@ -1,3 +1,8 @@
+2020-05-28 (0.7.5)
+========================
+* 修正出現「pedalPressed」的錯誤。(感謝 @Wei 回報)
+* Fixed issue showing "pedalPressed" error. (Thanks to @Wei) 
+
 2020-05-26 (0.7.5)
 ========================
 * 將剎車狀熊顯示於 dp 資訊欄。
