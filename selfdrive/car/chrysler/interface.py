@@ -43,7 +43,7 @@ class CarInterface(CarInterfaceBase):
       # ret.lateralTuning.pid.kf = 0.00004
       # ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kiBP = [[9., 20.], [9., 20.]]
       # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15,0.30], [0.03,0.03]]
-      # ret.steerRateCost = 0.6
+      ret.steerRateCost = 0.3
 
     ret.centerToFront = ret.wheelbase * 0.44
 
