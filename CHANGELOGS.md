@@ -1,3 +1,8 @@
+2020-05-30 (0.7.5)
+========================
+* Dynamic Follow 更新至 ShaneSmiskol:stock_additions 0.7.5 版。(感謝 @ShaneSmiskol 提供代碼、 @Wei 測試)
+* Updated Dynamic Follow to ShaneSmiskol:stock_additions 0.7.5. (Special Thanks to @ShaneSmiskol for the feature and @Wei for testing)
+
 2020-05-28 (0.7.5)
 ========================
 * 優化 Lexus GSH 轉向。(感謝 @簡銘佑 測試)

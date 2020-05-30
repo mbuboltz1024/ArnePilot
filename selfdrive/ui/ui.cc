@@ -129,7 +129,7 @@ static bool handle_dp_btn_touch(UIState *s, int touch_x, int touch_y) {
       s->scene.uilayout_sidebarcollapsed = true;  // collapse sidebar when tapping df button
       int val = s->dragon_df_mode;
       val++;
-      if (val >= 4) {
+      if (val >= 5) {
         val = 1;
       }
       s->dragon_df_mode = val;

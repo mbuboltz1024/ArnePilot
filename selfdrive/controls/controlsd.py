@@ -39,7 +39,6 @@ HwType = log.HealthData.HwType
 LaneChangeState = log.PathPlan.LaneChangeState
 LaneChangeDirection = log.PathPlan.LaneChangeDirection
 
-
 def add_lane_change_event(events, path_plan):
   postfix = 'ALC' if path_plan.alcAllowed else ''
   if path_plan.laneChangeState == LaneChangeState.preLaneChange:
@@ -255,7 +254,7 @@ def state_control(frame, rcv_frame, plan, path_plan, CS, CP, state, events, v_cr
         if e in ["leadCarDetected", "leadCarMoving"]:
           AM.add(frame, e, enabled, extra_text_2=extra_text)
     LaC.reset()
-    LoC.reset(v_pid=CS.vEgo)
+    LoC.reset(v_pid=plan.vTargetFuture)
 
   elif state in [State.enabled, State.softDisabling]:
     # parse warnings from car specific interface
