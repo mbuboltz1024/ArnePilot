@@ -29,7 +29,7 @@ else:
     dongle_id = "None"
   error_tags = {'dirty': dirty, 'username': uniqueID, 'dongle_id': dongle_id, 'branch': branch, 'remote': origin}
 
-  client = Client('https://980a0cba712a4c3593c33c78a12446e1:fecab286bcaf4dba8b04f7cff0188e2d@sentry.io/1488600',
+  client = Client('https://88a587ef50e14445977bd84c97f317aa@o400203.ingest.sentry.io/5262244',
                   install_sys_hook=False, transport=HTTPTransport, release=version, tags=error_tags)
 
   def capture_exception(*args, **kwargs):
