@@ -40,7 +40,8 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 3.05308 # in meters
       ret.steerRatio = 15.5 # 2013 V-6 (RWD) — 15.5:1 V-6 (AWD) — 16.5:1 V-8 (RWD) — 15.5:1 V-8 (AWD) — 16.5:1
       ret.mass = 1828.0 + STD_CARGO_KG # 2013 V-6 RWD
-      ret.lateralTuning.pid.kf = 0.0000766222212   # full torque for 10 deg at 80mph means 0.00007818594
+      ret.steerRateCost = 0.8
+      ret.lateralTuning.pid.kf = 0.0000666222212   # full torque for 10 deg at 80mph means 0.00007818594
       # ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kiBP = [[9., 20.], [9., 20.]]
       # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15,0.30], [0.03,0.03]]
 
