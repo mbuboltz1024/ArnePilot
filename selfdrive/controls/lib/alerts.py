@@ -170,9 +170,9 @@ ALERTS = [
 
   Alert(
       "startup",
-      _("Always Drive Autonomously Responsibly."),
-      _("MoparPilot"),
-      AlertStatus.userPrompt, AlertSize.full,
+      _("Chrysler AutoPilot"),
+      _("Starting up..."),
+      AlertStatus.critical, AlertSize.full,
       Priority.MID, VisualAlert.steerRequired, AudibleAlert.chimeWarning1, 0., 0., 5.),
 
   Alert(
