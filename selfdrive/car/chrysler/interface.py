@@ -5,6 +5,7 @@ from selfdrive.car.chrysler.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINT
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 
+ButtonType = car.CarState.ButtonEvent.Type
 
 class CarInterface(CarInterfaceBase):
   @staticmethod
@@ -21,6 +22,7 @@ class CarInterface(CarInterfaceBase):
     ret.communityFeature = True
 
     # Speed conversion:              20, 45 mph
+    ret.enableCruise = False 
     ret.wheelbase = 3.089  # in meters for Pacifica Hybrid 2017
     ret.steerRatio = 16.2 # Pacifica Hybrid 2017
     ret.mass = 1964. + STD_CARGO_KG  # kg curb weight Pacifica General
@@ -40,8 +42,8 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 3.05308 # in meters
       ret.steerRatio = 15.5 # 2013 V-6 (RWD) — 15.5:1 V-6 (AWD) — 16.5:1 V-8 (RWD) — 15.5:1 V-8 (AWD) — 16.5:1
       ret.mass = 1828.0 + STD_CARGO_KG # 2013 V-6 RWD
-      ret.lateralTuning.pid.kf = 0.00005584521385   # full torque for 10 deg at 80mph means 0.00007818594
-      ret.steerLimitTimer = 0.1
+      ret.lateralTuning.pid.kf = 0.00008  # full torque for 10 deg at 80mph means 0.00007818594
+      ret.steerLimitTimer = 0.02
 
     ret.centerToFront = ret.wheelbase * 0.44
 
@@ -58,6 +60,12 @@ class CarInterface(CarInterfaceBase):
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront)
 
     ret.enableCamera = is_ecu_disconnected(fingerprint[0], FINGERPRINTS, ECU_FINGERPRINT, candidate, Ecu.fwdCamera) or has_relay
+
+    ret.openpilotLongitudinalControl = True
+    ret.longitudinalTuning.deadzoneBP = [0., 9.]
+    ret.longitudinalTuning.deadzoneV = [0., .15]
+    ret.longitudinalTuning.kpBP = [0., 5., 35.]
+    ret.longitudinalTuning.kiBP = [0., 35.]
 
     return ret
 
@@ -76,6 +84,22 @@ class CarInterface(CarInterfaceBase):
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
     ret.buttonEvents = []
+    if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
+      be = car.CarState.ButtonEvent.new_message()
+      be.pressed = True
+      if not self.CS.cruise_buttons.cancel and self.CS.prev_cruise_buttons.cancel:
+        be.type = ButtonType.cancel
+      elif not self.CS.cruise_buttons.resume and self.CS.prev_cruise_buttons.resume: 
+        be.type = ButtonType.resumeCruise
+      elif not self.CS.cruise_buttons.speed_decrease and self.CS.prev_cruise_buttons.speed_decrease: 
+        be.type = ButtonType.decelCruise
+      elif not self.CS.cruise_buttons.speed_increase and self.CS.prev_cruise_buttons.speed_increase: 
+        be.type = ButtonType.accelCruise
+      else:
+        be.type = ButtonType.unknown
+
+      if be.type != ButtonType.unknown:
+        ret.buttonEvents.append(be)
 
     # events
     events = self.create_common_events(ret, extra_gears=[car.CarState.GearShifter.low], gas_resume_speed=2.)
@@ -97,6 +121,6 @@ class CarInterface(CarInterfaceBase):
     if (self.CS.frame == -1):
       return [] # if we haven't seen a frame 220, then do not update.
 
-    can_sends = self.CC.update(c.enabled, self.CS, c.actuators, c.cruiseControl.cancel, c.hudControl.visualAlert)
+    can_sends = self.CC.update(c.enabled, self.CS, c.actuators, c.cruiseControl.cancel, c.hudControl.visualAlert, c.hudControl)
 
     return can_sends

@@ -6,7 +6,7 @@ const int CHRYSLER_MAX_RATE_DOWN = 3;
 const int CHRYSLER_MAX_TORQUE_ERROR = 80;    // max torque cmd in excess of torque motor
 const int CHRYSLER_GAS_THRSLD = 30;  // 7% more than 2m/s
 const int CHRYSLER_STANDSTILL_THRSLD = 10;  // about 1m/s
-const AddrBus CHRYSLER_TX_MSGS[] = {{571, 0}, {658, 0}, {678, 0}};
+const AddrBus CHRYSLER_TX_MSGS[] = {{571, 0}, {658, 0}, {678, 0}, {2222, 0} ,{2223, 0}};
 
 // TODO: do checksum and counter checks
 AddrCheckStruct chrysler_rx_checks[] = {
@@ -15,6 +15,7 @@ AddrCheckStruct chrysler_rx_checks[] = {
   {.addr = {500}, .bus = 0, .check_checksum = true, .max_counter = 15U, .expected_timestep = 20000U},
   {.addr = {308}, .bus = 0, .check_checksum = false, .max_counter = 15U,  .expected_timestep = 20000U},
   {.addr = {320}, .bus = 0, .check_checksum = true, .max_counter = 15U,  .expected_timestep = 20000U},
+  {.addr = {2221}, .bus = 0, .check_checksum = false, .max_counter = 0U, .expected_timestep = 20000U},
 };
 const int CHRYSLER_RX_CHECK_LEN = sizeof(chrysler_rx_checks) / sizeof(chrysler_rx_checks[0]);
 

@@ -1,6 +1,6 @@
 from selfdrive.car import apply_toyota_steer_torque_limits
 from selfdrive.car.chrysler.chryslercan import create_lkas_hud, create_lkas_command, \
-                                               create_wheel_buttons
+                                               create_wheel_buttons, create_tf_control_command, create_tf_cruise_state_command
 from selfdrive.car.chrysler.values import CAR, SteerLimitParams
 from opendbc.can.packer import CANPacker
 
@@ -18,7 +18,7 @@ class CarController():
     self.packer = CANPacker(dbc_name)
 
 
-  def update(self, enabled, CS, actuators, pcm_cancel_cmd, hud_alert):
+  def update(self, enabled, CS, actuators, pcm_cancel_cmd, hud_alert, hud):
     # this seems needed to avoid steering faults and to force the sync with the EPS counter
     frame = CS.lkas_counter
     if self.prev_frame == frame:
@@ -27,8 +27,7 @@ class CarController():
     # *** compute control surfaces ***
     # steer torque
     new_steer = actuators.steer * SteerLimitParams.STEER_MAX
-    apply_steer = apply_toyota_steer_torque_limits(new_steer, self.apply_steer_last,
-                                                   CS.out.steeringTorqueEps, SteerLimitParams)
+    apply_steer = new_steer # apply_toyota_steer_torque_limits(new_steer, self.apply_steer_last, CS.out.steeringTorqueEps, SteerLimitParams)
     self.steer_rate_limited = new_steer != apply_steer
 
     moving_fast = CS.out.vEgo > CS.CP.minSteerSpeed  # for status message
@@ -48,9 +47,17 @@ class CarController():
 
     #*** control msgs ***
 
+    if CS.last_tf_control_id != CS.tf_control_id:
+      new_msg = create_tf_control_command(self.packer, CS.tf_control_id, actuators.gas, actuators.brake)
+      can_sends.append(new_msg)
+
     if pcm_cancel_cmd:
       # TODO: would be better to start from frame_2b3
       new_msg = create_wheel_buttons(self.ccframe)
+      can_sends.append(new_msg)
+
+    if (self.ccframe % 50 == 0):
+      new_msg = create_tf_cruise_state_command(self.packer, True, True, hud.speedVisible, hud.setSpeed, 1, hud.leadVisible)
       can_sends.append(new_msg)
 
     # LKAS_HEARTBIT is forwarded by Panda so no need to send it here.

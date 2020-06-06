@@ -80,6 +80,50 @@ def create_lkas_command(packer, apply_steer, moving_fast, frame):
   values["CHECKSUM"] = checksum
   return packer.make_can_msg("LKAS_COMMAND", 0, values)
 
+def create_tf_cruise_state_command(packer, takeover, enabled, engaged, set_speed, follow_distance, object_detected):
+  #   BO_ 2223 TF_CRUISE_STATE: 8 CONTROL_CLIENT
+  #  SG_ TAKEOVER : 7|1@0+ (1,0) [0|0] "" TRAFFICFLOW
+  #  SG_ ENABLED : 6|1@0+ (1,0) [0|0] "" TRAFFICFLOW
+  #  SG_ ENGAGED : 5|1@0+ (1,0) [0|0] "" TRAFFICFLOW
+  #  SG_ OBJECT_DETECTED : 4|1@0+ (1,0) [0|0] "" TRAFFICFLOW
+  #  SG_ SET_SPEED : 8|16@0+ (0.0000152590219, 0) [0|0] "m/s" TRAFFICFLOW
+  #  SG_ FOLLOW_DISTANCE : 23|8@0+ (1, 0) [0|0] "seconds" TRAFFICFLOW
+
+  values = {
+    "TAKEOVER": takeover,
+    "ENABLED": enabled,
+    "ENGAGED": engaged,
+    "OBJECT_DETECTED": object_detected,
+    "SET_SPEED": set_speed,
+    "FOLLOW_DISTANCE": follow_distance
+  }
+
+  return packer.make_can_msg("TF_CRUISE_STATE", 0, values)
+
+def create_tf_control_command(packer, ctrlid, gas, brake):
+# BO_ 2222 TF_CONTROL_REQUEST: 8 CONTROL_CLIENT
+#  SG_ LAT_CTRL_METHOD : 0|4@0+ (1,0) [0|0] "" TRAFFICFLOW
+#  SG_ LONG_CTRL_METHOD : 4|4@0+ (1,0) [0|0] "" TRAFFICFLOW
+#  SG_ LAT_CTRL_VALUE : 8|16@0+ (0.0152590219,0) [0|1000.0] "mag/Nm/degs" TRAFFICFLOW
+#  SG_ LONG_CTRL_VALUE : 24|16@0+ (0.0152590219,0) [0.0|1000.0] "mag/Nm/m/s^2" TRAFFICFLOW
+#  SG_ CTRL_REQ_ID : 56|8@0+ (1,0) [0|255] "" TRAFFICFLOW
+
+  # LKAS_COMMAND 0x292 (658) Lane-keeping signal to turn the wheel.
+  if brake > gas:
+    long_ctrl_method = 4 # brake magnitude
+    long_value = brake
+  else:
+    long_ctrl_method = 1 # gas magnitude
+    long_value = gas
+
+  values = {
+    "LONG_CTRL_METHOD": long_ctrl_method,
+    "LONG_CTRL_VALUE": long_value * 1000.,
+    "CTRL_REQ_ID": ctrlid
+  }
+
+  return packer.make_can_msg("TF_CONTROL_REQUEST", 0, values)
+
 
 def create_wheel_buttons(frame):
   # WHEEL_BUTTONS (571) Message sent to cancel ACC.

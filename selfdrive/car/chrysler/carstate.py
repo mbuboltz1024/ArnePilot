@@ -58,16 +58,47 @@ class CarState(CarStateBase):
 
     ret.genericToggle = bool(cp.vl["STEERING_LEVERS"]['HIGH_BEAM_FLASH'])
 
+    self.last_tf_control_id = self.tf_control_id
+    self.tf_control_id = cp.vl["TF_CONTROL_ANNOUNCEMENT"]["CTRL_ID"]
+
+    self.prev_cruise_buttons = self.cruise_buttons
+    self.cruise_buttons = {
+      'cancel': cp.vl["WHEEL_BUTTONS"]['ACC_CANCEL'],
+      'speed_increase': cp.vl["WHEEL_BUTTONS"]['ACC_SPEED_INC'],
+      'speed_decrease': cp.vl["WHEEL_BUTTONS"]['ACC_SPEED_DEC'],
+      'resume': cp.vl["WHEEL_BUTTONS"]['ACC_RESUME'],
+      'follow_increase': cp.vl["WHEEL_BUTTONS"]['ACC_FOLLOW_INC'],
+      'follow_decrease': cp.vl["WHEEL_BUTTONS"]['ACC_FOLLOW_DEC'],
+    }
     self.lkas_counter = cp_cam.vl["LKAS_COMMAND"]['COUNTER']
     self.lkas_car_model = cp_cam.vl["LKAS_HUD"]['CAR_MODEL']
     self.lkas_status_ok = cp_cam.vl["LKAS_HEARTBIT"]['LKAS_STATUS_OK']
 
     return ret
 
+# BO_ 2221 TF_CONTROL_ANNOUNCEMENT: 8 TRAFFICFLOW
+#  SG_ LAT_CTRL_STATUS : 0|4@0+ (1,0) [0|0] "" CONTROL_CLIENT
+#  SG_ LONG_CTRL_STATUS : 4|4@0+ (1,0) [0|0] "" CONTROL_CLIENT
+#  SG_ LAT_CTRL_SUPPORTED_UNITS : 8|2@0+ (1,0) [0|0] "" CONTROL_CLIENT
+#  SG_ LONG_POWER_CTRL_SUPPORTED_UNITS : 10|3@0+ (1,0) [0|0] "" CONTROL_CLIENT
+#  SG_ LONG_BRAKE_CTRL_SUPPORTED_UNITS : 13|3@0+ (1,0) [0|0] "" CONTROL_CLIENT
+#  SG_ LONG_POWER_CTRL_ACCELERATION_MAX : 16|10@0+ (0.9775171065,0) [0.0|1000.0] "m/s^2" CONTROL_CLIENT
+#  SG_ LONG_POWER_CTRL_TORQUE_MAX : 26|10@0+ (0.9775171065,0) [0.0|1000.0] "Nm" CONTROL_CLIENT
+#  SG_ LONG_BRAKE_CTRL_ACCELERATION_MAX : 36|10@0+ (0.9775171065,0) [0.0|1000.0] "m/s^2" CONTROL_CLIENT
+#  SG_ LONG_BRAKE_CTRL_TORQUE_MAX : 46|10@0+ (0.5865102639,0) [0.0|1000.0] "Nm" CONTROL_CLIENT
+#  SG_ CTRL_ID : 58|8@0+ (1,0) [0|255] "" CONTROL_CLIENT
   @staticmethod
   def get_can_parser(CP):
     signals = [
       # sig_name, sig_address, default
+      {"TF_CONTROL_ANNOUNCEMENT", "LONG_CTRL_STATUS", 0},
+      {"TF_CONTROL_ANNOUNCEMENT", "CTRL_ID", 0},
+      {"WHEEL_BUTTONS", "ACC_CANCEL", 0},
+      {"WHEEL_BUTTONS", "ACC_SPEED_INC", 0},
+      {"WHEEL_BUTTONS", "ACC_SPEED_DEC", 0},
+      {"WHEEL_BUTTONS", "ACC_FOLLOW_INC", 0},
+      {"WHEEL_BUTTONS", "ACC_RESUME", 0},
+      {"WHEEL_BUTTONS", "ACC_FOLLOW_DEC", 0},
       ("PRNDL", "GEAR", 0),
       ("DOOR_OPEN_FL", "DOORS", 0),
       ("DOOR_OPEN_FR", "DOORS", 0),
