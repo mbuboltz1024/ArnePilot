@@ -91,14 +91,14 @@ class CarState(CarStateBase):
   def get_can_parser(CP):
     signals = [
       # sig_name, sig_address, default
-      {"TF_CONTROL_ANNOUNCEMENT", "LONG_CTRL_STATUS", 0},
-      {"TF_CONTROL_ANNOUNCEMENT", "CTRL_ID", 0},
-      {"WHEEL_BUTTONS", "ACC_CANCEL", 0},
-      {"WHEEL_BUTTONS", "ACC_SPEED_INC", 0},
-      {"WHEEL_BUTTONS", "ACC_SPEED_DEC", 0},
-      {"WHEEL_BUTTONS", "ACC_FOLLOW_INC", 0},
-      {"WHEEL_BUTTONS", "ACC_RESUME", 0},
-      {"WHEEL_BUTTONS", "ACC_FOLLOW_DEC", 0},
+      ("TF_CONTROL_ANNOUNCEMENT", "LONG_CTRL_STATUS", 0),
+      ("TF_CONTROL_ANNOUNCEMENT", "CTRL_ID", 0),
+      ("WHEEL_BUTTONS", "ACC_CANCEL", 0),
+      ("WHEEL_BUTTONS", "ACC_SPEED_INC", 0),
+      ("WHEEL_BUTTONS", "ACC_SPEED_DEC", 0),
+      ("WHEEL_BUTTONS", "ACC_FOLLOW_INC", 0),
+      ("WHEEL_BUTTONS", "ACC_RESUME", 0),
+      ("WHEEL_BUTTONS", "ACC_FOLLOW_DEC", 0),
       ("PRNDL", "GEAR", 0),
       ("DOOR_OPEN_FL", "DOORS", 0),
       ("DOOR_OPEN_FR", "DOORS", 0),
