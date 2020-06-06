@@ -47,18 +47,19 @@ class CarController():
 
     #*** control msgs ***
 
-    if CS.last_tf_control_id != CS.tf_control_id:
-      new_msg = create_tf_control_command(self.packer, CS.tf_control_id, actuators.gas, actuators.brake)
-      can_sends.append(new_msg)
-
     if pcm_cancel_cmd:
       # TODO: would be better to start from frame_2b3
       new_msg = create_wheel_buttons(self.ccframe)
       can_sends.append(new_msg)
 
-    if (self.ccframe % 50 == 0):
-      new_msg = create_tf_cruise_state_command(self.packer, True, True, hud.speedVisible, hud.setSpeed, 1, hud.leadVisible)
-      can_sends.append(new_msg)
+    if self.car_fingerprint in (CAR.TF_CHRYSLER_300_2018):
+      if CS.last_tf_control_id != CS.tf_control_id:
+        new_msg = create_tf_control_command(self.packer, CS.tf_control_id, actuators.gas, actuators.brake)
+        can_sends.append(new_msg)
+          
+      if (self.ccframe % 50 == 0):
+        new_msg = create_tf_cruise_state_command(self.packer, True, True, hud.speedVisible, hud.setSpeed, 1, hud.leadVisible)
+        can_sends.append(new_msg)
 
     # LKAS_HEARTBIT is forwarded by Panda so no need to send it here.
     # frame is 100Hz (0.01s period)
