@@ -389,8 +389,8 @@ BO_ 2223 TF_CRUISE_STATE: 8 XXX
  SG_ ENABLED : 6|1@0+ (1,0) [0|0] "" XXX
  SG_ ENGAGED : 5|1@0+ (1,0) [0|0] "" XXX
  SG_ OBJECT_DETECTED : 4|1@0+ (1,0) [0|0] "" XXX
- SG_ SET_SPEED : 8|16@0+ (0.0000152590219, 0) [0|0] "m/s" XXX
- SG_ FOLLOW_DISTANCE : 23|8@0+ (1, 0) [0|0] "seconds" XXX
+ SG_ SET_SPEED : 8|16@0+ (0.0000152590219,0) [0|0] "m/s" XXX
+ SG_ FOLLOW_DISTANCE : 23|8@0+ (1,0) [0|0] "seconds" XXX
 
 CM_ SG_ 258 UNKNOWN_STEERING "never goes above 4. see if human-applied torque";
 CM_ SG_ 258 STEER_ANGLE "positive is left (counter-clockwise)";
