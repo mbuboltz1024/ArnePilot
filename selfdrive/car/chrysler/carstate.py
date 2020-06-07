@@ -87,18 +87,29 @@ class CarState(CarStateBase):
 #  SG_ LONG_BRAKE_CTRL_ACCELERATION_MAX : 36|10@0+ (0.9775171065,0) [0.0|1000.0] "m/s^2" CONTROL_CLIENT
 #  SG_ LONG_BRAKE_CTRL_TORQUE_MAX : 46|10@0+ (0.5865102639,0) [0.0|1000.0] "Nm" CONTROL_CLIENT
 #  SG_ CTRL_ID : 58|8@0+ (1,0) [0|255] "" CONTROL_CLIENT
+
+# BO_ 571 WHEEL_BUTTONS: 3 XXX
+#  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
+#  SG_ ACC_FOLLOW_DEC : 1|1@0+ (1,0) [0|3] "" XXX
+#  SG_ ACC_SPEED_INC : 2|1@0+ (1,0) [0|255] "" XXX
+#  SG_ ACC_SPEED_DEC : 3|1@0+ (1,0) [0|3] "" XXX
+#  SG_ ACC_FOLLOW_INC : 8|1@0+ (1,0) [0|15] "" XXX
+#  SG_ ACC_CANCEL : 0|1@0+ (1,0) [0|15] "" XXX
+#  SG_ COUNTER : 15|4@0+ (1,0) [0|15] "" XXX
+#  SG_ ACC_RESUME : 4|1@0+ (1,0) [0|15] "" XXX
   @staticmethod
   def get_can_parser(CP):
+
     signals = [
       # sig_name, sig_address, default
-      ("TF_CONTROL_ANNOUNCEMENT", "LONG_CTRL_STATUS", 0),
-      ("TF_CONTROL_ANNOUNCEMENT", "CTRL_ID", 0),
-      ("WHEEL_BUTTONS", "ACC_CANCEL", 0),
-      ("WHEEL_BUTTONS", "ACC_SPEED_INC", 0),
-      ("WHEEL_BUTTONS", "ACC_SPEED_DEC", 0),
-      ("WHEEL_BUTTONS", "ACC_FOLLOW_INC", 0),
-      ("WHEEL_BUTTONS", "ACC_RESUME", 0),
-      ("WHEEL_BUTTONS", "ACC_FOLLOW_DEC", 0),
+      ("LONG_CTRL_STATUS", "TF_CONTROL_ANNOUNCEMENT", 0),
+      ("CTRL_ID", "TF_CONTROL_ANNOUNCEMENT", 0),
+      ("ACC_CANCEL", "WHEEL_BUTTONS", 0),
+      ("ACC_SPEED_INC", "WHEEL_BUTTONS", 0),
+      ("ACC_SPEED_DEC", "WHEEL_BUTTONS", 0),
+      ("ACC_FOLLOW_INC", "WHEEL_BUTTONS", 0),
+      ("ACC_RESUME", "WHEEL_BUTTONS", 0),
+      ("ACC_FOLLOW_DEC", "WHEEL_BUTTONS", 0),
       ("PRNDL", "GEAR", 0),
       ("DOOR_OPEN_FL", "DOORS", 0),
       ("DOOR_OPEN_FR", "DOORS", 0),
@@ -136,7 +147,7 @@ class CarState(CarStateBase):
       ("STEERING", 100),
       ("ACC_2", 50),
     ]
-
+ 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 0)
 
   @staticmethod
