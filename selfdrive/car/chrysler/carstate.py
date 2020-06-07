@@ -58,7 +58,8 @@ class CarState(CarStateBase):
 
     ret.genericToggle = bool(cp.vl["STEERING_LEVERS"]['HIGH_BEAM_FLASH'])
 
-    self.last_tf_control_id = self.tf_control_id
+    if self.tf_control_id is not None:
+      self.last_tf_control_id = self.tf_control_id
     self.tf_control_id = cp.vl["TF_CONTROL_ANNOUNCEMENT"]["CTRL_ID"]
 
     self.prev_cruise_buttons = self.cruise_buttons

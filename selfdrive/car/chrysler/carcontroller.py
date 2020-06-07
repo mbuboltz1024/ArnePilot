@@ -53,9 +53,10 @@ class CarController():
       can_sends.append(new_msg)
 
     if self.car_fingerprint in (CAR.TF_CHRYSLER_300_2018):
-      if CS.last_tf_control_id != CS.tf_control_id:
-        new_msg = create_tf_control_command(self.packer, CS.tf_control_id, actuators.gas, actuators.brake)
-        can_sends.append(new_msg)
+      if CS.tf_control_id is not None:
+        if CS.last_tf_control_id != CS.tf_control_id:
+          new_msg = create_tf_control_command(self.packer, CS.tf_control_id, actuators.gas, actuators.brake)
+          can_sends.append(new_msg)
           
       if (self.ccframe % 50 == 0):
         new_msg = create_tf_cruise_state_command(self.packer, True, True, hud.speedVisible, hud.setSpeed, 1, hud.leadVisible)
