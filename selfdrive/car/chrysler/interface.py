@@ -88,13 +88,13 @@ class CarInterface(CarInterfaceBase):
     if self.CS.cruise_buttons != self.CS.prev_cruise_buttons:
       be = car.CarState.ButtonEvent.new_message()
       be.pressed = True
-      if not self.CS.cruise_buttons.cancel and self.CS.prev_cruise_buttons.cancel:
+      if not self.CS.cruise_buttons['cancel'] and self.CS.prev_cruise_buttons['cancel']:
         be.type = ButtonType.cancel
-      elif not self.CS.cruise_buttons.resume and self.CS.prev_cruise_buttons.resume: 
+      elif not self.CS.cruise_buttons['resume'] and self.CS.prev_cruise_buttons['resume']: 
         be.type = ButtonType.resumeCruise
-      elif not self.CS.cruise_buttons.speed_decrease and self.CS.prev_cruise_buttons.speed_decrease: 
+      elif not self.CS.cruise_buttons['speed_decrease'] and self.CS.prev_cruise_buttons['speed_decrease']: 
         be.type = ButtonType.decelCruise
-      elif not self.CS.cruise_buttons.speed_increase and self.CS.prev_cruise_buttons.speed_increase: 
+      elif not self.CS.cruise_buttons['speed_increase'] and self.CS.prev_cruise_buttons['speed_increase']: 
         be.type = ButtonType.accelCruise
       else:
         be.type = ButtonType.unknown
