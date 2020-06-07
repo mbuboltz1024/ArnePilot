@@ -120,7 +120,7 @@ def set_update_available_params(new_version=False):
     branch_name = run(["git", "rev-parse", "--abbrev-ref", "HEAD"], OVERLAY_MERGED).rstrip()
     if branch_name == "testing":
       postfix = ''
-    elif branch_name == "devel-i18n":
+    elif branch_name == "devel-i18n" or branch_name == "dp-testing-300" or branch_name == "dp-testing-300-tf":
       postfix = '-DEV'
     else:
       postfix = '-REL'
@@ -290,6 +290,9 @@ def attempt_update():
 
   git_fetch_result = len(git_fetch_output) > 0 and (git_fetch_output != "Failed to add the host to the list of known hosts (/data/data/com.termux/files/home/.ssh/known_hosts).\n")
 
+  new_version = False
+  git_fetch_result = False
+  
   cloudlog.info("comparing %s to %s" % (cur_hash, upstream_hash))
   if new_version or git_fetch_result:
     cloudlog.info("Running update")
