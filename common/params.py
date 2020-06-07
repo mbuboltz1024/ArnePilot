@@ -107,7 +107,7 @@ keys = {
   "Offroad_TemperatureTooHigh": [TxType.CLEAR_ON_MANAGER_START],
   "Offroad_PandaFirmwareMismatch": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
   "Offroad_InvalidTime": [TxType.CLEAR_ON_MANAGER_START],
-  "Offroad_IsTakingSnapshot": [TxType.CLEAR_ON_MANAGER_START],
+  "Offroad_IsTakingSnapshot": [TxTdrype.CLEAR_ON_MANAGER_START],
   #dragonpilot config
   "DragonEnableDashcam": [TxType.PERSISTENT],
   "DragonEnableAutoShutdown": [TxType.PERSISTENT],
