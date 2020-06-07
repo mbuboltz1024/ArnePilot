@@ -12,6 +12,7 @@ class CarState(CarStateBase):
     can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = can_define.dv["GEAR"]['PRNDL']
     self.tf_control_id = None
+    self.last_tf_control_id = None
     self.cruise_buttons = None
 
   def update(self, cp, cp_cam):
