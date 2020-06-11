@@ -43,7 +43,8 @@ class CarInterface(CarInterfaceBase):
       # ret.lateralTuning.pid.kf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
       # ret.steerLimitTimer = 0.1
       ret.steerRateCost = 0.3
-
+      ret.lateralTuning.pid.kf = 0.00005
+    
     ret.centerToFront = ret.wheelbase * 0.44
 
     ret.minSteerSpeed = 3.8  # m/s
