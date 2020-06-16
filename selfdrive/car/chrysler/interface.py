@@ -42,9 +42,10 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 1828.0 + STD_CARGO_KG # 2013 V-6 RWD
       # ret.lateralTuning.pid.kf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
       # ret.steerLimitTimer = 0.1
-      ret.steerRateCost = 0.3
-      ret.lateralTuning.pid.kf = 0.00005
-    
+      ret.steerRateCost = 0.5
+      ret.lateralTuning.pid.kf = 0.00004
+      ret.steerLimitTimer = 0.3
+      
     ret.centerToFront = ret.wheelbase * 0.44
 
     ret.minSteerSpeed = 3.8  # m/s
