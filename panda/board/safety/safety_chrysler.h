@@ -64,6 +64,7 @@ static uint8_t chrysler_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
 }
 
 static int chrysler_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
+  bool valid = true;
   // bool valid = addr_safety_check(to_push, chrysler_rx_checks, CHRYSLER_RX_CHECK_LEN,
   //                                chrysler_get_checksum, chrysler_compute_checksum,
   //                                chrysler_get_counter);
