@@ -68,9 +68,9 @@ static int chrysler_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
   //                                chrysler_get_checksum, chrysler_compute_checksum,
   //                                chrysler_get_counter);
 
-  // bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
+  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
 
-  // if (valid && (GET_BUS(to_push) == 0)) {
+  if (valid && (GET_BUS(to_push) == 0)) {
     int addr = GET_ADDR(to_push);
 
   //   // Measured eps torque
