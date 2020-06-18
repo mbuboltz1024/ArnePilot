@@ -64,23 +64,22 @@ static uint8_t chrysler_get_counter(CAN_FIFOMailBox_TypeDef *to_push) {
 }
 
 static int chrysler_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
+  // bool valid = addr_safety_check(to_push, chrysler_rx_checks, CHRYSLER_RX_CHECK_LEN,
+  //                                chrysler_get_checksum, chrysler_compute_checksum,
+  //                                chrysler_get_counter);
 
-  bool valid = addr_safety_check(to_push, chrysler_rx_checks, CHRYSLER_RX_CHECK_LEN,
-                                 chrysler_get_checksum, chrysler_compute_checksum,
-                                 chrysler_get_counter);
+  // bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
 
-  bool unsafe_allow_gas = unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS;
+  // if (valid && (GET_BUS(to_push) == 0)) {
+  //   int addr = GET_ADDR(to_push);
 
-  if (valid && (GET_BUS(to_push) == 0)) {
-    int addr = GET_ADDR(to_push);
+  //   // Measured eps torque
+  //   if (addr == 544) {
+  //     int torque_meas_new = ((GET_BYTE(to_push, 4) & 0x7U) << 8) + GET_BYTE(to_push, 5) - 1024U;
 
-    // Measured eps torque
-    if (addr == 544) {
-      int torque_meas_new = ((GET_BYTE(to_push, 4) & 0x7U) << 8) + GET_BYTE(to_push, 5) - 1024U;
-
-      // update array of samples
-      update_sample(&torque_meas, torque_meas_new);
-    }
+  //     // update array of samples
+  //     update_sample(&torque_meas, torque_meas_new);
+  //   }
 
     // enter controls on rising edge of ACC, exit controls on ACC off
     if (addr == 500) {
@@ -120,82 +119,84 @@ static int chrysler_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       brake_pressed_prev = brake_pressed;
     }
 
-    // check if stock camera ECU is on bus 0
-    if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && (addr == 0x292)) {
-      relay_malfunction_set();
-    }
-  }
-  return valid;
+    return true;
+
+  //   // check if stock camera ECU is on bus 0
+  //   if ((safety_mode_cnt > RELAY_TRNS_TIMEOUT) && (addr == 0x292)) {
+  //     relay_malfunction_set();
+  //   }
+  // }
+  // return valid;
 }
 
 static int chrysler_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
+  return 1;
+  // int tx = 1;
+  // int addr = GET_ADDR(to_send);
+  // int bus = GET_BUS(to_send);
 
-  int tx = 1;
-  int addr = GET_ADDR(to_send);
-  int bus = GET_BUS(to_send);
+  // if (!msg_allowed(addr, bus, CHRYSLER_TX_MSGS, sizeof(CHRYSLER_TX_MSGS) / sizeof(CHRYSLER_TX_MSGS[0]))) {
+  //   tx = 0;
+  // }
 
-  if (!msg_allowed(addr, bus, CHRYSLER_TX_MSGS, sizeof(CHRYSLER_TX_MSGS) / sizeof(CHRYSLER_TX_MSGS[0]))) {
-    tx = 0;
-  }
+  // if (relay_malfunction) {
+  //   tx = 0;
+  // }
 
-  if (relay_malfunction) {
-    tx = 0;
-  }
+  // // LKA STEER
+  // if (addr == 0x292) {
+  //   int desired_torque = ((GET_BYTE(to_send, 0) & 0x7U) << 8) + GET_BYTE(to_send, 1) - 1024U;
+  //   uint32_t ts = TIM2->CNT;
+  //   bool violation = 0;
 
-  // LKA STEER
-  if (addr == 0x292) {
-    int desired_torque = ((GET_BYTE(to_send, 0) & 0x7U) << 8) + GET_BYTE(to_send, 1) - 1024U;
-    uint32_t ts = TIM2->CNT;
-    bool violation = 0;
+  //   if (controls_allowed) {
 
-    if (controls_allowed) {
+  //     // *** global torque limit check ***
+  //     violation |= max_limit_check(desired_torque, CHRYSLER_MAX_STEER, -CHRYSLER_MAX_STEER);
 
-      // *** global torque limit check ***
-      violation |= max_limit_check(desired_torque, CHRYSLER_MAX_STEER, -CHRYSLER_MAX_STEER);
+  //     // *** torque rate limit check ***
+  //     violation |= dist_to_meas_check(desired_torque, desired_torque_last,
+  //       &torque_meas, CHRYSLER_MAX_RATE_UP, CHRYSLER_MAX_RATE_DOWN, CHRYSLER_MAX_TORQUE_ERROR);
 
-      // *** torque rate limit check ***
-      violation |= dist_to_meas_check(desired_torque, desired_torque_last,
-        &torque_meas, CHRYSLER_MAX_RATE_UP, CHRYSLER_MAX_RATE_DOWN, CHRYSLER_MAX_TORQUE_ERROR);
+  //     // used next time
+  //     desired_torque_last = desired_torque;
 
-      // used next time
-      desired_torque_last = desired_torque;
+  //     // *** torque real time rate limit check ***
+  //     violation |= rt_rate_limit_check(desired_torque, rt_torque_last, CHRYSLER_MAX_RT_DELTA);
 
-      // *** torque real time rate limit check ***
-      violation |= rt_rate_limit_check(desired_torque, rt_torque_last, CHRYSLER_MAX_RT_DELTA);
+  //     // every RT_INTERVAL set the new limits
+  //     uint32_t ts_elapsed = get_ts_elapsed(ts, ts_last);
+  //     if (ts_elapsed > CHRYSLER_RT_INTERVAL) {
+  //       rt_torque_last = desired_torque;
+  //       ts_last = ts;
+  //     }
+  //   }
 
-      // every RT_INTERVAL set the new limits
-      uint32_t ts_elapsed = get_ts_elapsed(ts, ts_last);
-      if (ts_elapsed > CHRYSLER_RT_INTERVAL) {
-        rt_torque_last = desired_torque;
-        ts_last = ts;
-      }
-    }
+  //   // no torque if controls is not allowed
+  //   if (!controls_allowed && (desired_torque != 0)) {
+  //     violation = 1;
+  //   }
 
-    // no torque if controls is not allowed
-    if (!controls_allowed && (desired_torque != 0)) {
-      violation = 1;
-    }
+  //   // reset to 0 if either controls is not allowed or there's a violation
+  //   if (violation || !controls_allowed) {
+  //     desired_torque_last = 0;
+  //     rt_torque_last = 0;
+  //     ts_last = ts;
+  //   }
 
-    // reset to 0 if either controls is not allowed or there's a violation
-    if (violation || !controls_allowed) {
-      desired_torque_last = 0;
-      rt_torque_last = 0;
-      ts_last = ts;
-    }
+  //   if (violation) {
+  //     tx = 0;
+  //   }
+  // }
 
-    if (violation) {
-      tx = 0;
-    }
-  }
+  // // FORCE CANCEL: only the cancel button press is allowed
+  // if (addr == 571) {
+  //   if ((GET_BYTE(to_send, 0) != 1) || ((GET_BYTE(to_send, 1) & 1) == 1)) {
+  //     tx = 0;
+  //   }
+  // }
 
-  // FORCE CANCEL: only the cancel button press is allowed
-  if (addr == 571) {
-    if ((GET_BYTE(to_send, 0) != 1) || ((GET_BYTE(to_send, 1) & 1) == 1)) {
-      tx = 0;
-    }
-  }
-
-  return tx;
+  // return tx;
 }
 
 static int chrysler_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
@@ -203,7 +204,7 @@ static int chrysler_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   int bus_fwd = -1;
   int addr = GET_ADDR(to_fwd);
 
-  if (!relay_malfunction) {
+ // if (!relay_malfunction) {
     // forward CAN 0 -> 2 so stock LKAS camera sees messages
     if (bus_num == 0) {
       bus_fwd = 2;
@@ -212,7 +213,7 @@ static int chrysler_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
     if ((bus_num == 2) && (addr != 658) && (addr != 678)) {
       bus_fwd = 0;
     }
-  }
+ // }
   return bus_fwd;
 }
 
@@ -223,6 +224,6 @@ const safety_hooks chrysler_hooks = {
   .tx = chrysler_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
   .fwd = chrysler_fwd_hook,
-  .addr_check = chrysler_rx_checks,
-  .addr_check_len = sizeof(chrysler_rx_checks) / sizeof(chrysler_rx_checks[0]),
+  .addr_check = NULL,// chrysler_rx_checks,
+  .addr_check_len = 0 //sizeof(chrysler_rx_checks) / sizeof(chrysler_rx_checks[0]),
 };
