@@ -15,7 +15,7 @@ class CarInterface(CarInterfaceBase):
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint, has_relay)
     ret.carName = "chrysler"
-    ret.safetyModel = car.CarParams.SafetyModel.chrysler
+    ret.safetyModel = car.CarParams.SafetyModel.allOutput
 
     # Chrysler port is a community feature, since we don't own one to test
     ret.communityFeature = True
