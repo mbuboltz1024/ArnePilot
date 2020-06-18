@@ -134,16 +134,16 @@ static int chrysler_tx_hook(CAN_FIFOMailBox_TypeDef *to_send) {
   int addr = GET_ADDR(to_send);
   int bus = GET_BUS(to_send);
 
-  // if (!msg_allowed(addr, bus, CHRYSLER_TX_MSGS, sizeof(CHRYSLER_TX_MSGS) / sizeof(CHRYSLER_TX_MSGS[0]))) {
-  //   tx = 0;
-  // }
+  if (!msg_allowed(addr, bus, CHRYSLER_TX_MSGS, sizeof(CHRYSLER_TX_MSGS) / sizeof(CHRYSLER_TX_MSGS[0]))) {
+    tx = 0;
+  }
 
   if (relay_malfunction) {
     tx = 0;
   }
 
   // LKA STEER
-  if (addr == 0x292) {
+  if (addr == 2030) {
     int desired_torque = ((GET_BYTE(to_send, 0) & 0x7U) << 8) + GET_BYTE(to_send, 1) - 1024U;
     uint32_t ts = TIM2->CNT;
     bool violation = 0;
@@ -223,6 +223,6 @@ const safety_hooks chrysler_hooks = {
   .tx = chrysler_tx_hook,
   .tx_lin = nooutput_tx_lin_hook,
   .fwd = chrysler_fwd_hook,
-  .addr_check = NULL, //chrysler_rx_checks,
-  .addr_check_len = 0 //sizeof(chrysler_rx_checks) / sizeof(chrysler_rx_checks[0]),
+  .addr_check = chrysler_rx_checks,
+  .addr_check_len = sizeof(chrysler_rx_checks) / sizeof(chrysler_rx_checks[0]),
 };
