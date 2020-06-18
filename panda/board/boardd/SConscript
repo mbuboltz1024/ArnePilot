@@ -1,0 +1,15 @@
+Import('env', 'common', 'messaging')
+
+# dragonpilot - Add read DragonBTG value
+if FindFile('DragonBTG', '/data/params/d') != None:
+  with open('/data/params/d/DragonBTG') as f:
+    if (int(f.read())) == 1:
+      env.Append(CCFLAGS='-DDragonBTG')
+
+env.Program('boardd.cc', LIBS=['usb-1.0', common, messaging, 'pthread', 'zmq', 'capnp', 'kj'])
+env.Library('libcan_list_to_can_capnp', ['can_list_to_can_capnp.cc'])
+
+env.Command(['boardd_api_impl.so'],
+  ['libcan_list_to_can_capnp.a', 'boardd_api_impl.pyx', 'boardd_setup.py'],
+  "cd selfdrive/boardd && python3 boardd_setup.py build_ext --inplace")
+
