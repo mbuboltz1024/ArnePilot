@@ -24,13 +24,22 @@ class CarInterface(CarInterfaceBase):
     ret.wheelbase = 3.089  # in meters for Pacifica Hybrid 2017
     ret.steerRatio = 16.2 # Pacifica Hybrid 2017
     ret.mass = 1964. + STD_CARGO_KG  # kg curb weight Pacifica General
-    ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kiBP = [[9., 20.], [9., 20.]]
-    ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15,0.30], [0.03,0.05]]
-    ret.lateralTuning.pid.kf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
+    # ret.lateralTuning.pid.kpBP, ret.lateralTuning.pid.kiBP = [[9., 20.], [9., 20.]]
+    # ret.lateralTuning.pid.kpV, ret.lateralTuning.pid.kiV = [[0.15,0.30], [0.03,0.05]]
+    # ret.lateralTuning.pid.kf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
     ret.steerActuatorDelay = 0.1
-    ret.steerRateCost = 0.7
-    ret.steerLimitTimer = 0.4
+    # ret.steerRateCost = 0.7
+    # ret.steerLimitTimer = 0.4
 
+    ret.steerRateCost = 0.15
+    ret.steerLimitTimer = 0.04
+
+    ret.lateralTuning.init('indi')
+    ret.lateralTuning.indi.innerLoopGain = 2.13
+    ret.lateralTuning.indi.outerLoopGain = 0.82
+    ret.lateralTuning.indi.timeConstant = 1.0
+    ret.lateralTuning.indi.actuatorEffectiveness = 1.15
+    
     if candidate in (CAR.JEEP_CHEROKEE, CAR.JEEP_CHEROKEE_2019):
       ret.wheelbase = 2.91  # in meters
       ret.steerRatio = 12.7
@@ -40,17 +49,7 @@ class CarInterface(CarInterfaceBase):
       ret.wheelbase = 3.05308 # in meters
       ret.steerRatio = 15.5 # 2013 V-6 (RWD) — 15.5:1 V-6 (AWD) — 16.5:1 V-8 (RWD) — 15.5:1 V-8 (AWD) — 16.5:1
       ret.mass = 1828.0 + STD_CARGO_KG # 2013 V-6 RWD
-      # ret.lateralTuning.pid.kf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
-      # ret.steerLimitTimer = 0.1
-      ret.steerRateCost = 0.5
-      # ret.lateralTuning.pid.kf = 0.00004
-      ret.steerLimitTimer = 0.04
 
-      ret.lateralTuning.init('indi')
-      ret.lateralTuning.indi.innerLoopGain = 2.13
-      ret.lateralTuning.indi.outerLoopGain = 0.82
-      ret.lateralTuning.indi.timeConstant = 1.0
-      ret.lateralTuning.indi.actuatorEffectiveness = 1.15
 
       # ret.lateralTuning.init('lqr')
       # ret.lateralTuning.lqr.scale = 1500.0
