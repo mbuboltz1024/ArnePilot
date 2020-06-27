@@ -194,6 +194,14 @@ keys = {
   "DragonEnableAutoUpdate": [TxType.PERSISTENT],
   "DragonUIBrightness": [TxType.PERSISTENT],
   "DragonDashcamImpactDetect": [TxType.PERSISTENT],
+  
+  "AndrewSteerRateCost": [TxType.PERSISTENT],
+  "AndrewSteerLimitTimer": [TxType.PERSISTENT],
+  "AndrewINDIInnerLoopGain": [TxType.PERSISTENT],
+  "AndrewINDIOuterLoopGain": [TxType.PERSISTENT],
+  "AndrewINDIActuatorEffectiveness": [TxType.PERSISTENT],
+  "AndrewINDITimeConstant": [TxType.PERSISTENT],
+
   "DragonDashcamImpactDetectStarted": [TxType.CLEAR_ON_MANAGER_START],
 }
 
