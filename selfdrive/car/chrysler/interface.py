@@ -71,7 +71,12 @@ class CarInterface(CarInterfaceBase):
     
     if params.get("AndrewINDITimeConstant") is None:
       params.put("AndrewINDITimeConstant", "1.0")
+
+    if params.get("AndrewSteerActuatorDelay") is None:
+      params.put("AndrewSteerActuatorDelay", "0.1")
     
+    ret.steerActuatorDelay =  float(params.get("AndrewSteerActuatorDelay", encoding='utf8'))
+
     ret.steerRateCost = float(params.get("AndrewSteerRateCost", encoding='utf8'))
     ret.steerLimitTimer = float(params.get("AndrewSteerLimitTimer", encoding='utf8'))
 
