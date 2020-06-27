@@ -5,7 +5,6 @@ from selfdrive.car.chrysler.values import Ecu, ECU_FINGERPRINT, CAR, FINGERPRINT
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, is_ecu_disconnected, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
 from common.params import Params
-params = Params()
 
 class CarInterface(CarInterfaceBase):
   @staticmethod
@@ -53,6 +52,7 @@ class CarInterface(CarInterfaceBase):
   # "AndrewINDITimeConstant": [TxType.PERSISTENT],
 
     # Change to try on all vehicles!!
+    params = Params()
 
     if params.get("AndrewSteerRateCost") is None:
       params.put("AndrewSteerRateCost", "1.0")
